@@ -149,6 +149,7 @@ class SystemServer(object):
         post_id = collection.insert_one(jsondata).inserted_id
 
         return data
+
     def rpc_system_restart(self, session, rpc, *params):
         raise error.AccessDeniedAppError(rpc)
 
@@ -169,7 +170,7 @@ def main(*margs):
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
 
     args.password = parse_password_arg(args.password)
-    host_key =  "/home/marcos/Documents/Netconf/ServerCode/server-key"
+    host_key =  "/home/marcos/Documents/netconf/example/server-key"
 
     auth = server.SSHUserPassController(username=args.username, password=args.password)
     s = SystemServer(args.port, host_key, auth, args.debug)
