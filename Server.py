@@ -31,7 +31,7 @@ import pymongo
 from lxml import etree
 from xmljson import badgerfish as bf
 import xmltodict
-
+import Validation
 nsmap_add("sys", "urn:ietf:params:xml:ns:yang:ietf-system")
 
 
@@ -58,7 +58,7 @@ class SystemServer(object):
     def __init__(self, port, host_key, auth, debug):
         self.server = server.NetconfSSHServer(auth, self, port, host_key, debug)
 
-    def close():
+    def close(self):
         self.server.close()
 
     def nc_append_capabilities(self, capabilities):  # pylint: disable=W0613
@@ -121,21 +121,22 @@ class SystemServer(object):
 
         
         etreeX = bf.etree(file)
-        #etreeX[1] es donde esta el xml en si, etreeX[0] contiene el id que
+
+        Validation.validate_rpc(etreeX[1], "get-config")
+        # etreeX[1] es donde esta el xml en si, etreeX[0] contiene el id que
         # le asigna mongo db
-        
         return etreeX[1]
-        #return util.filter_results(rpc, data, filter_or_none, self.server.debug)
+        # return util.filter_results(rpc, data, filter_or_none, self.server.debug)
         
     def rpc_edit_config(self, unused_session, rpc, *unused_params):
         """XXX API subject to change -- unfinished"""
         print("Accesing edit config method but not configured")
-        #print(type(rpc))
+        # print(type(rpc))
         data = util.elm("ok")
-        #print(len(unused_params))
-        #print(type(unused_params[0]))
-        #print(etree.tostring(rpc,pretty_print=True))
-        #print(etree.tostring(unused_params[0],pretty_print=True))
+        # print(len(unused_params))
+        # print(type(unused_params[0]))
+        # print(etree.tostring(rpc,pretty_print=True))
+        # print(etree.tostring(unused_params[0],pretty_print=True))
         print(rpc[0][1].tag)
         print(type(rpc[0][1]))
         data_to_insert = rpc[0][1]
