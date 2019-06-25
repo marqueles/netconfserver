@@ -2,7 +2,7 @@ from netconf.client import NetconfSSHSession
 import xmltodict
 from xmljson import badgerfish as bf
 from lxml import etree
-with open('tests/testdata2.xml', 'r') as file:
+with open('tests/testdata_wrong.xml', 'r') as file:
     data = file.read().replace('\n', '')
 
 jsondata = xmltodict.parse(data)

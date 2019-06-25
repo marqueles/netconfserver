@@ -1,6 +1,24 @@
 from lxml import etree
-import subprocess
+import pymongo
 import os
+import datetime
+
+
+def register(operation, status, info):
+    myclient = pymongo.MongoClient("mongodb://localhost:27017/")
+    mydb = myclient["mydatabase"]
+    collection = mydb["log_validation"]
+
+    rpc = {
+        "datetime" : datetime.datetime.utcnow(),
+        "operation" : operation,
+        "status" : status
+    }
+
+    if info:
+        rpc["info"] = info
+
+    collection.insert_one(rpc)
 
 
 def validate_rpc(rpc, operation):
@@ -16,11 +34,14 @@ def validate_rpc(rpc, operation):
 
     o = os.popen("pyang -f xmlverifier "+''.join(dependencies.splitlines()) +
                  " -o example.tree -p all/ --xmlverifier-xml validation.xml --xmlverifier-operation "
-                 + operation + " | grep Issues -A100 1").read()
+                 + operation + "| grep Issues -A100").read()
 
     file = open('res.txt', 'w+')
     file.write(o)
     file.close
 
     if not o == "":
-        raise AttributeError
+        register(operation, "error", o)
+        raise Exception("the model in the system is not syntactically valid")
+    else:
+        register(operation, "success")

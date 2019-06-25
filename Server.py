@@ -130,16 +130,13 @@ class SystemServer(object):
         
     def rpc_edit_config(self, unused_session, rpc, *unused_params):
         """XXX API subject to change -- unfinished"""
-        print("Accesing edit config method but not configured")
-        # print(type(rpc))
+
         data = util.elm("ok")
-        # print(len(unused_params))
-        # print(type(unused_params[0]))
-        # print(etree.tostring(rpc,pretty_print=True))
-        # print(etree.tostring(unused_params[0],pretty_print=True))
-        print(rpc[0][1].tag)
-        print(type(rpc[0][1]))
+
         data_to_insert = rpc[0][1]
+
+        Validation.validate_rpc(data_to_insert,"edit-config")
+
         data_to_insert_string = etree.tostring(data_to_insert,pretty_print=True)
 
         myclient = pymongo.MongoClient("mongodb://localhost:27017/")
@@ -147,7 +144,7 @@ class SystemServer(object):
         collection = mydb["test-collection"]
 
         jsondata = xmltodict.parse(data_to_insert_string)
-        post_id = collection.insert_one(jsondata).inserted_id
+        collection.insert_one(jsondata).inserted_id
 
         return data
 

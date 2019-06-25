@@ -4,8 +4,8 @@ from lxml import etree
 
 session = NetconfSSHSession("localhost","8300","admin","admin")
 config = session.get_config()
-#dom = xml.dom.minidom.parseString(config)
-#print(dom.toprettyxml())
+
+# TODO: Catch the RPCerror exception.
 
 print(etree.tostring(config,pretty_print=True))
 session.close()
