@@ -31,7 +31,7 @@ import pymongo
 from lxml import etree
 from xmljson import badgerfish as bf
 import xmltodict
-
+import Validation
 nsmap_add("sys", "urn:ietf:params:xml:ns:yang:ietf-system")
 
 
@@ -58,7 +58,7 @@ class SystemServer(object):
     def __init__(self, port, host_key, auth, debug):
         self.server = server.NetconfSSHServer(auth, self, port, host_key, debug)
 
-    def close():
+    def close(self):
         self.server.close()
 
     def nc_append_capabilities(self, capabilities):  # pylint: disable=W0613
@@ -121,24 +121,22 @@ class SystemServer(object):
 
         
         etreeX = bf.etree(file)
-        #etreeX[1] es donde esta el xml en si, etreeX[0] contiene el id que
+
+        Validation.validate_rpc(etreeX[1], "get-config")
+        # etreeX[1] es donde esta el xml en si, etreeX[0] contiene el id que
         # le asigna mongo db
-        
         return etreeX[1]
-        #return util.filter_results(rpc, data, filter_or_none, self.server.debug)
+        # return util.filter_results(rpc, data, filter_or_none, self.server.debug)
         
     def rpc_edit_config(self, unused_session, rpc, *unused_params):
         """XXX API subject to change -- unfinished"""
-        print("Accesing edit config method but not configured")
-        #print(type(rpc))
+
         data = util.elm("ok")
-        #print(len(unused_params))
-        #print(type(unused_params[0]))
-        #print(etree.tostring(rpc,pretty_print=True))
-        #print(etree.tostring(unused_params[0],pretty_print=True))
-        print(rpc[0][1].tag)
-        print(type(rpc[0][1]))
+
         data_to_insert = rpc[0][1]
+
+        Validation.validate_rpc(data_to_insert,"edit-config")
+
         data_to_insert_string = etree.tostring(data_to_insert,pretty_print=True)
 
         myclient = pymongo.MongoClient("mongodb://localhost:27017/")
@@ -146,9 +144,10 @@ class SystemServer(object):
         collection = mydb["test-collection"]
 
         jsondata = xmltodict.parse(data_to_insert_string)
-        post_id = collection.insert_one(jsondata).inserted_id
+        collection.insert_one(jsondata).inserted_id
 
         return data
+
     def rpc_system_restart(self, session, rpc, *params):
         raise error.AccessDeniedAppError(rpc)
 
@@ -169,7 +168,7 @@ def main(*margs):
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
 
     args.password = parse_password_arg(args.password)
-    host_key =  "/home/marcos/Documents/Netconf/ServerCode/server-key"
+    host_key =  "/home/marcos/Documents/netconf/example/server-key"
 
     auth = server.SSHUserPassController(username=args.username, password=args.password)
     s = SystemServer(args.port, host_key, auth, args.debug)
