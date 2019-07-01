@@ -44,4 +44,4 @@ def validate_rpc(rpc, operation):
         register(operation, "error", o)
         raise Exception("the model in the system is not syntactically valid")
     else:
-        register(operation, "success")
+        register(operation, "success", o)
