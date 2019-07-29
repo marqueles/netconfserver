@@ -103,30 +103,22 @@ class SystemServer(object):
         return util.filter_results(rpc, data, filter_or_none, self.server.debug)
 
     def rpc_get_config(self, session, rpc, source_elm, filter_or_none):  # pylint: disable=W0613
-        """Passed the source element"""
-        data = util.elm("nc:data")
-        sysc = util.subelm(data, "sys:system")
-        sysc.append(util.leaf_elm("sys:hostname", socket.gethostname()))
-
-        # Clock
-        clockc = util.subelm(sysc, "sys:clock")
-        # tzname = time.tzname[time.localtime().tm_isdst]
-        clockc.append(util.leaf_elm("sys:timezone-utc-offset", int(time.timezone / 100)))
-
 
         myclient = pymongo.MongoClient("mongodb://localhost:27017/")
         db = myclient["mydatabase"]
         collection = db["test-collection"]
         file = collection.find_one()
 
-        
+        #logging.info(file)
+
         etreeX = bf.etree(file)
 
-        Validation.validate_rpc(etreeX[1], "get-config")
+        #Validation.validate_rpc(etreeX[1], "get-config")
+
         # etreeX[1] es donde esta el xml en si, etreeX[0] contiene el id que
         # le asigna mongo db
-        return etreeX[1]
-        # return util.filter_results(rpc, data, filter_or_none, self.server.debug)
+        #return etreeX[1]
+        return util.filter_results(rpc, etreeX[1], filter_or_none, self.server.debug)
         
     def rpc_edit_config(self, unused_session, rpc, *unused_params):
         """XXX API subject to change -- unfinished"""
@@ -135,9 +127,9 @@ class SystemServer(object):
 
         data_to_insert = rpc[0][1]
 
-        Validation.validate_rpc(data_to_insert,"edit-config")
+        #Validation.validate_rpc(data_to_insert,"edit-config")
 
-        data_to_insert_string = etree.tostring(data_to_insert,pretty_print=True)
+        data_to_insert_string = etree.tostring(data_to_insert, pretty_print=True)
 
         myclient = pymongo.MongoClient("mongodb://localhost:27017/")
         mydb = myclient["mydatabase"]
