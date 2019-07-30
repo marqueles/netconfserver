@@ -27,11 +27,11 @@ import sys
 import time
 from netconf import error, server, util
 from netconf import nsmap_add, NSMAP
-import pymongo
+
 from lxml import etree
-from xmljson import badgerfish as bf
-import xmltodict
+from lxml import objectify
 import Validation
+
 nsmap_add("sys", "urn:ietf:params:xml:ns:yang:ietf-system")
 
 
@@ -104,41 +104,33 @@ class SystemServer(object):
 
     def rpc_get_config(self, session, rpc, source_elm, filter_or_none):  # pylint: disable=W0613
 
-        myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-        db = myclient["mydatabase"]
-        collection = db["test-collection"]
-        file = collection.find_one()
+        response_tree = etree.parse("configuration/platform.xml")
+        response = response_tree.getroot()
+        #Validation.validate_rpc(response, "get-config")
 
-        #logging.info(file)
+        return response
+        #return util.filter_results(rpc, response_tree[1], filter_or_none, self.server.debug)
+        #return response_tree.getroot()
 
-        etreeX = bf.etree(file)
-
-        #Validation.validate_rpc(etreeX[1], "get-config")
-
-        # etreeX[1] es donde esta el xml en si, etreeX[0] contiene el id que
-        # le asigna mongo db
-        #return etreeX[1]
-        return util.filter_results(rpc, etreeX[1], filter_or_none, self.server.debug)
-        
     def rpc_edit_config(self, unused_session, rpc, *unused_params):
         """XXX API subject to change -- unfinished"""
 
-        data = util.elm("ok")
-
+        data_response = util.elm("ok")
         data_to_insert = rpc[0][1]
 
         #Validation.validate_rpc(data_to_insert,"edit-config")
 
-        data_to_insert_string = etree.tostring(data_to_insert, pretty_print=True)
+        data_to_insert = data_to_insert.find("{http://openconfig.net/yang/platform}components")
+        data_to_insert_string = etree.tostring(data_to_insert,pretty_print=True,encoding='unicode')
+        parser = etree.XMLParser(remove_blank_text=True)
+        data_to_insert = etree.fromstring(data_to_insert_string,parser=parser)
+        data_to_insert_string = etree.tostring(data_to_insert,pretty_print=True)
 
-        myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-        mydb = myclient["mydatabase"]
-        collection = mydb["test-collection"]
+        logging.info(data_to_insert_string)
 
-        jsondata = xmltodict.parse(data_to_insert_string)
-        collection.insert_one(jsondata).inserted_id
+        open("configuration/platform.xml", "w").write(data_to_insert_string)
 
-        return data
+        return data_response
 
     def rpc_system_restart(self, session, rpc, *params):
         raise error.AccessDeniedAppError(rpc)
