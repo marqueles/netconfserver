@@ -104,13 +104,23 @@ class SystemServer(object):
 
     def rpc_get_config(self, session, rpc, source_elm, filter_or_none):  # pylint: disable=W0613
 
-        response_tree = etree.parse("configuration/platform.xml")
-        response = response_tree.getroot()
-        #Validation.validate_rpc(response, "get-config")
+        logging.info(etree.tostring(rpc, pretty_print=True))
+        # Empty filter
+        if rpc[0].find('{urn:ietf:params:xml:ns:netconf:base:1.0}filter') is None:
+            # All configuration files should be appended
+            response_tree = etree.parse("configuration/platform.xml")
+            response = response_tree.getroot()
+        # Only supportedd datastore so far is platform
+        elif "platform" in rpc[0][1][0].tag:
+            response_tree = etree.parse("configuration/platform.xml")
+            # logging.info(etree.tostring(response_tree, pretty_print=True))
+            response = response_tree.getroot()
 
-        return response
-        #return util.filter_results(rpc, response_tree[1], filter_or_none, self.server.debug)
-        #return response_tree.getroot()
+        else:
+            raise AttributeError("The requested datastore is not supported")
+
+        # Validation.validate_rpc(response, "get-config")
+        return util.filter_results(rpc, response, filter_or_none, self.server.debug)
 
     def rpc_edit_config(self, unused_session, rpc, *unused_params):
         """XXX API subject to change -- unfinished"""
@@ -118,13 +128,13 @@ class SystemServer(object):
         data_response = util.elm("ok")
         data_to_insert = rpc[0][1]
 
-        #Validation.validate_rpc(data_to_insert,"edit-config")
+        # Validation.validate_rpc(data_to_insert,"edit-config")
 
-        data_to_insert = data_to_insert.find("{http://openconfig.net/yang/platform}components")
-        data_to_insert_string = etree.tostring(data_to_insert,pretty_print=True,encoding='unicode')
+        # data_to_insert = data_to_insert.find("{http://openconfig.net/yang/platform}data")
+        data_to_insert_string = etree.tostring(data_to_insert, pretty_print=True, encoding='unicode')
         parser = etree.XMLParser(remove_blank_text=True)
-        data_to_insert = etree.fromstring(data_to_insert_string,parser=parser)
-        data_to_insert_string = etree.tostring(data_to_insert,pretty_print=True)
+        data_to_insert = etree.fromstring(data_to_insert_string, parser=parser)
+        data_to_insert_string = etree.tostring(data_to_insert, pretty_print=True)
 
         logging.info(data_to_insert_string)
 
@@ -140,7 +150,6 @@ class SystemServer(object):
 
 
 def main(*margs):
-
     parser = argparse.ArgumentParser("Example System Server")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     parser.add_argument(
@@ -152,7 +161,7 @@ def main(*margs):
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
 
     args.password = parse_password_arg(args.password)
-    host_key =  "/home/marcos/Documents/netconf/example/server-key"
+    host_key = "/home/marcos/Documents/netconf/example/server-key"
 
     auth = server.SSHUserPassController(username=args.username, password=args.password)
     s = SystemServer(args.port, host_key, auth, args.debug)
@@ -175,4 +184,3 @@ __author__ = 'Christian Hopps'
 __date__ = 'February 24 2018'
 __version__ = '1.0'
 __docformat__ = "restructuredtext en"
-

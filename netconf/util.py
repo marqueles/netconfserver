@@ -156,54 +156,65 @@ def subtree_filter(data,rpc):
     for filter_item in rpc.iter(qmap('nc')+'filter'):
         filter_tree = filter_item
 
-    # Searches for matching namepsace filter node in data
-    def matching_ns(data, filter_item):
+    unprunned_toreturn = data
+    filter_elm = filter_tree
 
-        #logger.info(filter_item.tag)
-        for data_item in data.iter():
-            if 'xmlns' in data_item.attrib:
-                if ('{' + data_item.attrib['xmlns'] + '}' + data_item.tag) == filter_item.tag:
-                    return data_item
-        return elm("data")
+    logging.info(etree.tostring(unprunned_toreturn,pretty_print=True))
+    logging.info(etree.tostring(filter_elm,pretty_print=True))
 
-    toreturn = elm("data")
+    def check_content_match(data):
+        response = False
+        for child in data:
+            if not(child.text == '' or child.text is None):
+                response = True
+        return response
 
-    def clean_tree(element, filter_elem):
-        for child in filter_elem:
+    def prune_descendants(data,filter):
+        logging.info("The child " + filter.tag + " is a content match: " + str(check_content_match(filter)))
+        if check_content_match(filter):
 
-            if child.contains('{'):
-                logger.info("component:" + child.tag  + "so checking for matching ns")
+            # logging.info("Elements of the content match: ------------------")
+            # logging.info(etree.tostring(data,pretty_print=True))
+            # logging.info(etree.tostring(filter, pretty_print=True))
 
-            if element.find(child.tag) is None:
-                #elements are not mathcing because of ns
-                logger.info("cleaning component:" + child.tag)
-                #element.remove(child)
+            #find content match element
+            for child in filter:
+                if not(child.text is '' or child.text is None):
+                    matching_elem = child
+            # logging.info("Looking for the element " + matching_elem.tag + " , " + matching_elem.text)
+
+            # Checking if the current elem matches the seached one
+            if data.find(matching_elem.tag) is not None and data.find(matching_elem.tag).text == matching_elem.text:
+                # logging.info("This element matches")
+                #logging.info(etree.tostring(data,pretty_print=True))
+                #logging.info(etree.tostring(filter, pretty_print=True))
+                if len(list(filter)) > 1:
+                    matching_elem.text = ''
+                    logging.info("Containment nodes inside")
+                    logging.info(etree.tostring(data,pretty_print=True))
+                    logging.info(etree.tostring(filter, pretty_print=True))
+                    prune_descendants(data,filter)
             else:
-                logger.info("maintaining component:" + child.tag)
-                clean_tree(child, element.find(child.tag))
-    # This should find the items to filer, then find the  parent and include it to the parent in toreturn
-    for filter_item in filter_tree:
-        matching_elem = matching_ns(data, filter_item)
-        """
-        for child in filter_item:
-            logger.info(child.base)
+                # logging.info("This element doesnt match")
+                data.getparent().remove(data)
 
-        logger.info(etree.tostring(matching_elem, pretty_print=True))
-        logger.info(matching_elem.tag)
-        for child in matching_elem:
-            logger.info(child.tag)
-        #logger.info(etree.tostring(filter_item, pretty_print=True))
-        logger.info(filter_item.tag)
-        for child in filter_item:
-            logger.info(child.tag)
-        """
+        else:
+            for child in data:
 
-        clean_tree(matching_elem, filter_item)
-        ## hace falta iterar y filtrar este toreturn incluido
-        logger.info((filter_item))
+                if len(list(filter)) is not 0:
+                    if filter.find(child.tag) is not None:
+                        logging.info("Element " + child.tag + " found in data, so persisting it")
+                        prune_descendants(child, filter[0])
 
-        toreturn.append(matching_elem)
-    return toreturn
+                    else:
+                        logging.info("Element " + child.tag + " missing in data, deleting it")
+                        data.remove(child)
+
+    prune_descendants(unprunned_toreturn,filter_elm)
+
+    #logging.info(etree.tostring(unprunned_toreturn,pretty_print=True))
+
+    return unprunned_toreturn
 
 
 def filter_results(rpc, data, filter_or_none, debug=False):
