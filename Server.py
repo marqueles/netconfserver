@@ -27,11 +27,11 @@ import sys
 import time
 from netconf import error, server, util
 from netconf import nsmap_add, NSMAP
-import pymongo
+
 from lxml import etree
-from xmljson import badgerfish as bf
-import xmltodict
+from lxml import objectify
 import Validation
+
 nsmap_add("sys", "urn:ietf:params:xml:ns:yang:ietf-system")
 
 
@@ -104,41 +104,43 @@ class SystemServer(object):
 
     def rpc_get_config(self, session, rpc, source_elm, filter_or_none):  # pylint: disable=W0613
 
-        myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-        db = myclient["mydatabase"]
-        collection = db["test-collection"]
-        file = collection.find_one()
+        logging.info(etree.tostring(rpc, pretty_print=True))
+        # Empty filter
+        if rpc[0].find('{urn:ietf:params:xml:ns:netconf:base:1.0}filter') is None:
+            # All configuration files should be appended
+            response_tree = etree.parse("configuration/platform.xml")
+            response = response_tree.getroot()
+        # Only supportedd datastore so far is platform
+        elif "platform" in rpc[0][1][0].tag:
+            response_tree = etree.parse("configuration/platform.xml")
+            # logging.info(etree.tostring(response_tree, pretty_print=True))
+            response = response_tree.getroot()
 
-        #logging.info(file)
+        else:
+            raise AttributeError("The requested datastore is not supported")
 
-        etreeX = bf.etree(file)
+        # Validation.validate_rpc(response, "get-config")
+        return util.filter_results(rpc, response, filter_or_none, self.server.debug)
 
-        #Validation.validate_rpc(etreeX[1], "get-config")
-
-        # etreeX[1] es donde esta el xml en si, etreeX[0] contiene el id que
-        # le asigna mongo db
-        #return etreeX[1]
-        return util.filter_results(rpc, etreeX[1], filter_or_none, self.server.debug)
-        
     def rpc_edit_config(self, unused_session, rpc, *unused_params):
         """XXX API subject to change -- unfinished"""
 
-        data = util.elm("ok")
-
+        data_response = util.elm("ok")
         data_to_insert = rpc[0][1]
 
-        #Validation.validate_rpc(data_to_insert,"edit-config")
+        # Validation.validate_rpc(data_to_insert,"edit-config")
 
+        # data_to_insert = data_to_insert.find("{http://openconfig.net/yang/platform}data")
+        data_to_insert_string = etree.tostring(data_to_insert, pretty_print=True, encoding='unicode')
+        parser = etree.XMLParser(remove_blank_text=True)
+        data_to_insert = etree.fromstring(data_to_insert_string, parser=parser)
         data_to_insert_string = etree.tostring(data_to_insert, pretty_print=True)
 
-        myclient = pymongo.MongoClient("mongodb://localhost:27017/")
-        mydb = myclient["mydatabase"]
-        collection = mydb["test-collection"]
+        logging.info(data_to_insert_string)
 
-        jsondata = xmltodict.parse(data_to_insert_string)
-        collection.insert_one(jsondata).inserted_id
+        open("configuration/platform.xml", "w").write(data_to_insert_string)
 
-        return data
+        return data_response
 
     def rpc_system_restart(self, session, rpc, *params):
         raise error.AccessDeniedAppError(rpc)
@@ -148,7 +150,6 @@ class SystemServer(object):
 
 
 def main(*margs):
-
     parser = argparse.ArgumentParser("Example System Server")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     parser.add_argument(
@@ -160,7 +161,7 @@ def main(*margs):
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
 
     args.password = parse_password_arg(args.password)
-    host_key =  "/home/marcos/Documents/netconf/example/server-key"
+    host_key = "/home/marcos/Documents/netconf/example/server-key"
 
     auth = server.SSHUserPassController(username=args.username, password=args.password)
     s = SystemServer(args.port, host_key, auth, args.debug)
@@ -183,4 +184,3 @@ __author__ = 'Christian Hopps'
 __date__ = 'February 24 2018'
 __version__ = '1.0'
 __docformat__ = "restructuredtext en"
-
