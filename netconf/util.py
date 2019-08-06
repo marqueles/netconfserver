@@ -62,6 +62,12 @@ def is_selection_node(felm):
     return ftext is None or not ftext.strip()
 
 
+def trimstate(data):
+
+    for state in data.iter("{*}state"):
+        state.getparent().remove(state)
+
+
 def xpath_filter_result(data, xpath):
     """Filter a result given an xpath expression.
 

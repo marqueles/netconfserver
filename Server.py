@@ -68,39 +68,23 @@ class SystemServer(object):
         util.subelm(capabilities, "capability").text = NSMAP["sys"]
 
     def rpc_get(self, session, rpc, filter_or_none):  # pylint: disable=W0613
-        """Passed the filter element or None if not present"""
-        data = util.elm("nc:data")
+        logging.info(etree.tostring(rpc, pretty_print=True))
+        # Empty filter
+        if rpc[0].find('{urn:ietf:params:xml:ns:netconf:base:1.0}filter') is None:
+            # All configuration files should be appended
+            response_tree = etree.parse("configuration/platform.xml")
+            response = response_tree.getroot()
+        # Only supportedd datastore so far is platform
+        elif "platform" in rpc[0][1][0].tag:
+            response_tree = etree.parse("configuration/platform.xml")
+            # logging.info(etree.tostring(response_tree, pretty_print=True))
+            response = response_tree.getroot()
 
-        # if False: # If NMDA
-        #     sysc = util.subelm(data, "system")
-        #     sysc.append(util.leaf_elm("hostname", socket.gethostname()))
+        else:
+            raise AttributeError("The requested datastore is not supported")
 
-        #     # Clock
-        #     clockc = util.subelm(sysc, "clock")
-        #     tzname = time.tzname[time.localtime().tm_isdst]
-        #     clockc.append(util.leaf_elm("timezone-utc-offset", int(time.timezone / 100)))
-
-        sysc = util.subelm(data, "sys:system-state")
-        platc = util.subelm(sysc, "sys:system")
-
-        platc.append(util.leaf_elm("sys:os-name", platform.system()))
-        platc.append(util.leaf_elm("sys:os-release", platform.release()))
-        platc.append(util.leaf_elm("sys:os-version", platform.version()))
-        platc.append(util.leaf_elm("sys:machine", platform.machine()))
-
-        # Clock
-        clockc = util.subelm(sysc, "sys:clock")
-        now = datetime.datetime.now()
-        clockc.append(util.leaf_elm("sys:current-datetime", date_time_string(now)))
-
-        if os.path.exists("/proc/uptime"):
-            with open('/proc/uptime', 'r') as f:
-                uptime_seconds = float(f.readline().split()[0])
-            boottime = time.time() - uptime_seconds
-            boottime = datetime.datetime.fromtimestamp(boottime)
-            clockc.append(util.leaf_elm("sys:boot-datetime", date_time_string(boottime)))
-
-        return util.filter_results(rpc, data, filter_or_none, self.server.debug)
+        # Validation.validate_rpc(response, "get-config")
+        return util.filter_results(rpc, response, filter_or_none, self.server.debug)
 
     def rpc_get_config(self, session, rpc, source_elm, filter_or_none):  # pylint: disable=W0613
 
@@ -120,7 +104,10 @@ class SystemServer(object):
             raise AttributeError("The requested datastore is not supported")
 
         # Validation.validate_rpc(response, "get-config")
-        return util.filter_results(rpc, response, filter_or_none, self.server.debug)
+        toreturn = util.filter_results(rpc, response, filter_or_none, self.server.debug)
+        util.trimstate(toreturn)
+
+        return toreturn
 
     def rpc_edit_config(self, unused_session, rpc, *unused_params):
         """XXX API subject to change -- unfinished"""
