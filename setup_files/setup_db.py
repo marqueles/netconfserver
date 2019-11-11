@@ -12,7 +12,12 @@ if sys.argv[1] is None:
     print("The database reference is missing")
     exit(1)
 
+if sys.argv[2] is None:
+    print("Tha startup config is missing")
+    exit(1)
+
 database_model = sys.argv[1]
+database_file = sys.argv[2]
 database_name = database_model.split(".")[0]
 
 print("Creating database", database_name)
@@ -20,7 +25,6 @@ print("Creating database", database_name)
 dbclient = MongoClient()
 db = dbclient.netconfserver
 
-database_file = database_name+".xml"
 print(database_file)
 
 print("Parsing data from the xml provided")

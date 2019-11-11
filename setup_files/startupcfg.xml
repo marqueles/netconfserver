@@ -1,0 +1,428 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">
+  <components xmlns="http://openconfig.net/yang/platform">
+    <component>
+      <name>shelf-sh4 1</name>
+      <config>
+        <name>shelf-sh4 1</name>
+      </config>
+      <state>
+        <name>shelf-sh4 1</name>
+        <type>CHASSIS</type>
+        <description>FSP3000C, 4HU 7-slots</description>
+        <hardware-version>1.01</hardware-version>
+        <id>adva-f8-shelf:shelf-sh4</id>
+        <mfg-date>2016-03-16</mfg-date>
+        <mfg-name>UN344269584</mfg-name>
+        <oper-status>ACTIVE</oper-status>
+        <part-no>1078800051-01</part-no>
+        <removable>false</removable>
+        <serial-no>LBADVA71160804795</serial-no>
+        <software-version>3.1.1</software-version>
+        <temperature>
+          <instant>330</instant>
+        </temperature>
+        <used-power>0</used-power>
+      </state>
+      <subcomponents>
+        <subcomponent>
+          <name>cem-4-card 1/cem</name>
+        </subcomponent>
+        <subcomponent>
+          <name>ftm-4-card 1/fan-2</name>
+        </subcomponent>
+        <subcomponent>
+          <name>ftm-4-card 1/fan-1</name>
+        </subcomponent>
+        <subcomponent>
+          <name>ecm-card 1/ecm-1</name>
+        </subcomponent>
+        <subcomponent>
+          <name>psm-ac4-card 1/psm-1</name>
+        </subcomponent>
+        <subcomponent>
+          <name>mp-2b4ct-card 1/1</name>
+        </subcomponent>
+      </subcomponents>
+    </component>
+    <component>
+      <name>cem-4-card 1/cem</name>
+      <config>
+        <name>cem-4-card 1/cem</name>
+      </config>
+      <state>
+        <name>cem-4-card 1/cem</name>
+        <type>FRU</type>
+        <description>Common Equip Module, 4HU</description>
+        <hardware-version>1.01</hardware-version>
+        <id>f8-card-cem:cem-4-card</id>
+        <memory>
+          <available>346554368</available>
+          <utilized>178343936</utilized>
+        </memory>
+        <mfg-date>2016-06-09</mfg-date>
+        <mfg-name>UN344269584</mfg-name>
+        <oper-status>ACTIVE</oper-status>
+        <part-no>1063801054-01</part-no>
+        <removable>true</removable>
+        <serial-no>LBADVA71162104467</serial-no>
+        <software-version>3.1.1</software-version>
+        <temperature>
+          <avg>32.3</avg>
+          <instant>33.0</instant>
+          <max>33.0</max>
+          <min>31.0</min>
+        </temperature>
+        <used-power>7</used-power>
+      </state>
+      <subcomponents>
+        <subcomponent>
+          <name>port 1/cem/m2</name>
+        </subcomponent>
+        <subcomponent>
+          <name>port 1/cem/m1</name>
+        </subcomponent>
+        <subcomponent>
+          <name>port 1/cem/m3</name>
+        </subcomponent>
+      </subcomponents>
+    </component>
+    <component>
+      <name>ftm-4-card 1/fan-2</name>
+      <config>
+        <name>ftm-4-card 1/fan-2</name>
+      </config>
+      <state>
+        <name>ftm-4-card 1/fan-2</name>
+        <type>FAN</type>
+        <description>Fan Var Speed 4HU</description>
+        <hardware-version>1.01</hardware-version>
+        <id>f8-eq-fan:ftm-4-card</id>
+        <mfg-date>2016-03-03</mfg-date>
+        <mfg-name>UN344269584</mfg-name>
+        <oper-status>ACTIVE</oper-status>
+        <part-no>1042800054-01</part-no>
+        <removable>true</removable>
+        <serial-no>LBADVA71160806416</serial-no>
+        <temperature>
+          <avg>30.8</avg>
+          <instant>31.0</instant>
+          <max>31.5</max>
+          <min>30.5</min>
+        </temperature>
+        <used-power>41</used-power>
+      </state>
+      <subcomponents/>
+    </component>
+    <component>
+      <name>ftm-4-card 1/fan-1</name>
+      <config>
+        <name>ftm-4-card 1/fan-1</name>
+      </config>
+      <state>
+        <name>ftm-4-card 1/fan-1</name>
+        <type>FAN</type>
+        <description>Fan Var Speed 4HU</description>
+        <hardware-version>1.01</hardware-version>
+        <id>f8-eq-fan:ftm-4-card</id>
+        <mfg-date>2016-03-03</mfg-date>
+        <mfg-name>UN344269584</mfg-name>
+        <oper-status>ACTIVE</oper-status>
+        <part-no>1042800054-01</part-no>
+        <removable>true</removable>
+        <serial-no>LBADVA71160806408</serial-no>
+        <temperature>
+          <avg>32.3</avg>
+          <instant>32.5</instant>
+          <max>32.5</max>
+          <min>32.0</min>
+        </temperature>
+        <used-power>49</used-power>
+      </state>
+      <subcomponents/>
+    </component>
+    <component>
+      <name>ecm-card 1/ecm-1</name>
+      <config>
+        <name>ecm-card 1/ecm-1</name>
+      </config>
+      <state>
+        <name>ecm-card 1/ecm-1</name>
+        <type>CONTROLLER_CARD</type>
+        <description>ECM Controller, Mgmt RJ-45</description>
+        <hardware-version>1.01</hardware-version>
+        <id>f8-card-ecm:ecm-card</id>
+        <memory>
+          <available>6393004032</available>
+          <utilized>1901998080</utilized>
+        </memory>
+        <mfg-date/>
+        <mfg-name>UN344269584</mfg-name>
+        <oper-status>ACTIVE</oper-status>
+        <part-no>1063801012-01</part-no>
+        <removable>true</removable>
+        <serial-no>LBADVA71170203050</serial-no>
+        <software-version>3.1.1</software-version>
+        <temperature>
+          <avg>32.6</avg>
+          <instant>32.7</instant>
+          <max>33.0</max>
+          <min>32.2</min>
+        </temperature>
+        <used-power>15</used-power>
+      </state>
+      <subcomponents>
+        <subcomponent>
+          <name>port 1/ecm-1/s2</name>
+        </subcomponent>
+        <subcomponent>
+          <name>port 1/ecm-1/s1</name>
+        </subcomponent>
+        <subcomponent>
+          <name>port 1/ecm-1/serial</name>
+        </subcomponent>
+        <subcomponent>
+          <name>port 1/ecm-1/m</name>
+        </subcomponent>
+      </subcomponents>
+    </component>
+    <component>
+      <name>psm-ac4-card 1/psm-1</name>
+      <config>
+        <name>psm-ac4-card 1/psm-1</name>
+      </config>
+      <state>
+        <name>psm-ac4-card 1/psm-1</name>
+        <type>POWER_SUPPLY</type>
+        <description>PSM AC Card, 4HU, 1200W</description>
+        <hardware-version>1</hardware-version>
+        <id>f8-card-psm:psm-ac4-card</id>
+        <mfg-date>2015-11-02</mfg-date>
+        <mfg-name>UN344269584</mfg-name>
+        <oper-status>DISABLED</oper-status>
+        <part-no>1040800064-01</part-no>
+        <removable>true</removable>
+        <serial-no>LBADVA93154100968</serial-no>
+      </state>
+      <subcomponents/>
+    </component>
+    <component>
+      <name>port 1/cem/m2</name>
+      <config>
+        <name>port 1/cem/m2</name>
+      </config>
+      <state>
+        <name>port 1/cem/m2</name>
+        <type>PORT</type>
+        <oper-status>ACTIVE</oper-status>
+        <removable>false</removable>
+      </state>
+      <subcomponents/>
+    </component>
+    <component>
+      <name>port 1/cem/m1</name>
+      <config>
+        <name>port 1/cem/m1</name>
+      </config>
+      <state>
+        <name>port 1/cem/m1</name>
+        <type>PORT</type>
+        <oper-status>ACTIVE</oper-status>
+        <removable>false</removable>
+      </state>
+      <subcomponents/>
+    </component>
+    <component>
+      <name>port 1/cem/m3</name>
+      <config>
+        <name>port 1/cem/m3</name>
+      </config>
+      <state>
+        <name>port 1/cem/m3</name>
+        <type>PORT</type>
+        <oper-status>ACTIVE</oper-status>
+        <removable>false</removable>
+      </state>
+      <subcomponents/>
+    </component>
+    <component>
+      <name>port 1/ecm-1/s2</name>
+      <config>
+        <name>port 1/ecm-1/s2</name>
+      </config>
+      <state>
+        <name>port 1/ecm-1/s2</name>
+        <type>PORT</type>
+        <oper-status>DISABLED</oper-status>
+        <removable>true</removable>
+      </state>
+      <subcomponents/>
+    </component>
+    <component>
+      <name>port 1/ecm-1/s1</name>
+      <config>
+        <name>port 1/ecm-1/s1</name>
+      </config>
+      <state>
+        <name>port 1/ecm-1/s1</name>
+        <type>PORT</type>
+        <oper-status>DISABLED</oper-status>
+        <removable>true</removable>
+      </state>
+      <subcomponents/>
+    </component>
+    <component>
+      <name>port 1/ecm-1/serial</name>
+      <config>
+        <name>port 1/ecm-1/serial</name>
+      </config>
+      <state>
+        <name>port 1/ecm-1/serial</name>
+        <type>PORT</type>
+        <removable>false</removable>
+      </state>
+      <subcomponents/>
+    </component>
+    <component>
+      <name>port 1/ecm-1/m</name>
+      <config>
+        <name>port 1/ecm-1/m</name>
+      </config>
+      <state>
+        <name>port 1/ecm-1/m</name>
+        <type>PORT</type>
+        <oper-status>ACTIVE</oper-status>
+        <removable>false</removable>
+      </state>
+      <subcomponents/>
+    </component>
+    <component>
+      <name>mp-2b4ct-card 1/1</name>
+      <config>
+        <name>mp-2b4ct-card 1/1</name>
+      </config>
+      <state>
+        <name>mp-2b4ct-card 1/1</name>
+        <type>LINECARD</type>
+        <description>400G QuadFlex, Dual Network</description>
+        <hardware-version>2.02</hardware-version>
+        <id>f8-card-quadflex:mp-2b4ct-card</id>
+        <memory>
+          <available>777736192</available>
+          <utilized>280657920</utilized>
+        </memory>
+        <mfg-date>2018-04-06</mfg-date>
+        <mfg-name>UN344269584</mfg-name>
+        <oper-status>ACTIVE</oper-status>
+        <part-no>1063802131-02</part-no>
+        <removable>true</removable>
+        <serial-no>LBADVA70181100892</serial-no>
+        <software-version>3.1.1</software-version>
+        <temperature>
+          <avg>47.0</avg>
+          <instant>50.1</instant>
+          <max>50.1</max>
+          <min>37.0</min>
+        </temperature>
+        <used-power>112</used-power>
+      </state>
+      <subcomponents>
+        <subcomponent>
+          <name>port 1/1/n1</name>
+        </subcomponent>
+        <subcomponent>
+          <name>port 1/1/n2</name>
+        </subcomponent>
+        <subcomponent>
+          <name>port 1/1/c1</name>
+        </subcomponent>
+      </subcomponents>
+    </component>
+    <component>
+      <name>port 1/1/n1</name>
+      <config>
+        <name>port 1/1/n1</name>
+      </config>
+      <state>
+        <name>port 1/1/n1</name>
+        <type>PORT</type>
+        <oper-status>ACTIVE</oper-status>
+        <removable>false</removable>
+      </state>
+      <subcomponents/>
+    </component>
+    <component>
+      <name>port 1/1/n2</name>
+      <config>
+        <name>port 1/1/n2</name>
+      </config>
+      <state>
+        <name>port 1/1/n2</name>
+        <type>PORT</type>
+        <oper-status>DISABLED</oper-status>
+        <removable>false</removable>
+      </state>
+      <subcomponents/>
+    </component>
+    <component>
+      <name>optch 1/1/n1</name>
+      <config>
+        <name>optch 1/1/n1</name>
+      </config>
+      <state>
+        <name>optch 1/1/n1</name>
+        <type>OPTICAL_CHANNEL</type>
+        <description>Optical channel</description>
+      </state>
+      <subcomponents/>
+    </component>
+    <component>
+      <name>optch 1/1/n2</name>
+      <config>
+        <name>optch 1/1/n2</name>
+      </config>
+      <state>
+        <name>optch 1/1/n2</name>
+        <type>OPTICAL_CHANNEL</type>
+        <description>Optical channel</description>
+      </state>
+      <subcomponents/>
+    </component>
+    <component>
+      <name>transceiver 1/1/c1 QSFP28-112G-LR4-SM-LC</name>
+      <config>
+        <name>transceiver 1/1/c1 QSFP28-112G-LR4-SM-LC</name>
+      </config>
+      <state>
+        <name>transceiver 1/1/c1 QSFP28-112G-LR4-SM-LC</name>
+        <type>TRANSCEIVER</type>
+        <description>QSFP28 Plug 112G LR4 SM LC</description>
+        <hardware-version>1.01:00</hardware-version>
+        <mfg-date>2016-10-06</mfg-date>
+        <mfg-name>ADVA</mfg-name>
+        <oper-status>ACTIVE</oper-status>
+        <part-no>1061800720-01</part-no>
+        <serial-no>LBADVA70164805667</serial-no>
+      </state>
+      <subcomponents/>
+    </component>
+    <component>
+      <name>port 1/1/c1</name>
+      <config>
+        <name>port 1/1/c1</name>
+      </config>
+      <state>
+        <name>port 1/1/c1</name>
+        <type>PORT</type>
+        <oper-status>DISABLED</oper-status>
+        <removable>true</removable>
+      </state>
+      <subcomponents>
+        <subcomponent>
+          <name>transceiver 1/1/c1 QSFP28-112G-LR4-SM-LC</name>
+        </subcomponent>
+      </subcomponents>
+    </component>
+  </components>
+</data>
+

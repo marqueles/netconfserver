@@ -255,29 +255,28 @@ class SystemServer(object):
 
 
 def main(*margs):
-    parser = argparse.ArgumentParser("Example System Server")
+    parser = argparse.ArgumentParser("Netconf Agent Emulator")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
-    parser.add_argument(
-        "--password", default="admin", help='Use "env:" or "file:" prefix to specify source')
     parser.add_argument('--port', type=int, default=8300, help='Netconf server port')
     parser.add_argument("--username", default="admin", help='Netconf username')
+    parser.add_argument("--password", default="admin", help='Use "env:" or "file:" prefix to specify source')
     args = parser.parse_args(*margs)
 
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
 
     args.password = parse_password_arg(args.password)
-    host_key = "/home/marcos/Documents/netconf/example/server-key"
+    host_key = "/home/cesar/.ssh/id_rsa"
 
     auth = server.SSHUserPassController(username=args.username, password=args.password)
     s = SystemServer(args.port, host_key, auth, args.debug)
 
     if sys.stdout.isatty():
-        print("^C to quit server")
+        print("^C to stop emulator")
     try:
         while True:
             time.sleep(1)
     except Exception:
-        print("quitting server")
+        print("Quitting emulator")
 
     s.close()
 
