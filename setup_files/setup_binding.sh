@@ -1,21 +1,20 @@
 if [ "$#" -ne "3" ]; then
-  	echo "Sorry, you need to include a file with the datastores and another with the augments, aditionally you should ad a folder with the associated yang files(datastores, imports and augments) , called setup_files "
-	exit 1
+  	echo "You need to include three parameters:\n\r"
+  	echo "1) A file with the datastores\n\r"
+  	echo "2) A file with the augments\n\r"
+  	echo "3) A file with the startup config\n\r"
+  	exit 1
 fi
 dependencies="$(cat $1)"
 dependencies="$dependencies $(cat $2)"
-#echo $dependencies
-
 config=$3
 
 PYBINDPLUGIN=$(/usr/bin/env python -c 'import pyangbind; import os; print ("{}/plugin".format(os.path.dirname(pyangbind.__file__)))')
-#echo $PYBINDPLUGIN
-
-pyang --plugindir $PYBINDPLUGIN -f pybind -o binding.py $dependencies
-cp binding.py ../
-
 
 cat $1 | while read -r line
 do
+  filename="binding_"$line".py"
+  pyang --plugindir $PYBINDPLUGIN -f pybind -o $filename $dependencies
+  cp $filename ../bindings/
   python setup_db.py "$line" "$config"
 done

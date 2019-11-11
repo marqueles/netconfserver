@@ -35,7 +35,7 @@ import Validation
 import pyangbind.lib.serialise as serialise
 import pyangbind.lib.pybindJSON as pybindJSON
 from pyangbind.lib.serialise import pybindJSONDecoder
-import binding
+import bindings
 import json
 
 nsmap_add("sys", "urn:ietf:params:xml:ns:yang:ietf-system")
@@ -230,20 +230,22 @@ class SystemServer(object):
     def rpc_edit_config(self, unused_session, rpc, *unused_params):
         """XXX API subject to change -- unfinished"""
 
+        print(rpc)
+
         data_response = util.elm("ok")
         data_to_insert = rpc[0][1]
 
         # Validation.validate_rpc(data_to_insert,"edit-config")
 
         # data_to_insert = data_to_insert.find("{http://openconfig.net/yang/platform}data")
-        data_to_insert_string = etree.tostring(data_to_insert, pretty_print=True, encoding='unicode')
-        parser = etree.XMLParser(remove_blank_text=True)
-        data_to_insert = etree.fromstring(data_to_insert_string, parser=parser)
-        data_to_insert_string = etree.tostring(data_to_insert, pretty_print=True)
+        # data_to_insert_string = etree.tostring(data_to_insert, pretty_print=True, encoding='unicode')
+        # parser = etree.XMLParser(remove_blank_text=True)
+        # data_to_insert = etree.fromstring(data_to_insert_string, parser=parser)
+        # data_to_insert_string = etree.tostring(data_to_insert, pretty_print=True)
 
-        logging.info(data_to_insert_string)
+        # logging.info(data_to_insert_string)
 
-        open("configuration/platform.xml", "w").write(data_to_insert_string)
+        # open("configuration/platform.xml", "w").write(data_to_insert_string)
 
         return data_response
 
@@ -283,8 +285,3 @@ def main(*margs):
 
 if __name__ == "__main__":
     main()
-
-__author__ = 'Christian Hopps'
-__date__ = 'February 24 2018'
-__version__ = '1.0'
-__docformat__ = "restructuredtext en"

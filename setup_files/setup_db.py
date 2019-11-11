@@ -1,20 +1,21 @@
 from __future__ import print_function
 from pymongo import MongoClient
-from binding import openconfig_platform
-# Need to find a way to import this
-import binding
 import pyangbind.lib.serialise as serialise
 import pyangbind.lib.pybindJSON as pybindJSON
 import sys
 import json
+from os import listdir
 
 if sys.argv[1] is None:
     print("The database reference is missing")
     exit(1)
 
 if sys.argv[2] is None:
-    print("Tha startup config is missing")
+    print("The startup config is missing")
     exit(1)
+
+binding = listdir("bindings")
+print(binding)
 
 database_model = sys.argv[1]
 database_file = sys.argv[2]

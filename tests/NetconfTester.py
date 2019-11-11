@@ -11,7 +11,7 @@ def main(*margs):
     parser.add_argument("--rpc", default='get-config', help="RPC to execute (get-config, get, edit-config)")
     parser.add_argument("--datastore", default='running', help="Netconf datastore (running or candidate). Only for get-config and edit-config RPCs.")
     parser.add_argument("--filter_or_config", default=None,
-                        help="RPC filter field (XML format without header <filter>) for get-config and get RPCs. RPC config field (XML format without header <config>) for edit-config RPC.")
+                        help="RPC filter field for get-config and get RPCs or RPC config field for edit-config RPC.")
     args = parser.parse_args(*margs)
 
     host = args.host
@@ -24,31 +24,19 @@ def main(*margs):
 
     man = manager.connect(host=host, port=port, username=username, password=password, timeout=120, hostkey_verify=False, look_for_keys=False, allow_agent=False)
 
-    if rpc =='get-config':
-        if filter_or_config is None:
-            rpc_xml = et.fromstring('<get-config><source><' + datastore + '/></source></get-config>')
-        else:
-            rpc_xml = et.fromstring('<get-config><source><' + datastore + '/></source><filter>' + filter_or_config + '</filter></get-config>')
+    if rpc == 'get-config':
 
-        get_config_response = man.dispatch(rpc_xml)
+        get_config_response = man.get_config(datastore, filter_or_config)
         print get_config_response
 
     elif rpc == 'get':
-        if filter_or_config is None:
-            rpc_xml = et.fromstring('<get></get>')
-        else:
-            rpc_xml = et.fromstring('<get><filter>' + filter_or_config + '</filter></get>')
 
-        get_response = man.dispatch(rpc_xml)
+        get_response = man.get(filter_or_config)
         print get_response
 
     elif rpc == 'edit-config':
-        if filter_or_config is None:
-            print("Error in edit-config rpc. An edit-config rpc without config field is not valid.")
-        else:
-            rpc_xml = et.fromstring('<edit-config><source><' + datastore + '/></source><config>' + filter_or_config + '</config></edit-config>')
 
-        edit_config_response = man.dispatch(rpc_xml)
+        edit_config_response = man.edit_config(datastore, 'merge', filter_or_config, 120)
         print edit_config_response
 
     else:
