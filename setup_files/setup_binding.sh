@@ -13,8 +13,11 @@ PYBINDPLUGIN=$(/usr/bin/env python -c 'import pyangbind; import os; print ("{}/p
 
 cat $1 | while read -r line
 do
-  filename="binding_"$line".py"
+  newline=${line/.yang/}
+  echo $newline
+  filename="binding_"$newline".py"
+  echo $filename
   pyang --plugindir $PYBINDPLUGIN -f pybind -o $filename $dependencies
-  cp $filename ../bindings/
-  python setup_db.py "$line" "$config"
+  cp $filename bindings/
+  python setup_db.py "$newline" "$config"
 done

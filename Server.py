@@ -35,7 +35,7 @@ import Validation
 import pyangbind.lib.serialise as serialise
 import pyangbind.lib.pybindJSON as pybindJSON
 from pyangbind.lib.serialise import pybindJSONDecoder
-import bindings
+import setup_files.bindings
 import json
 
 nsmap_add("sys", "urn:ietf:params:xml:ns:yang:ietf-system")
