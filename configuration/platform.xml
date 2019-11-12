@@ -114,7 +114,7 @@
       </state>
       <fan>
         <state>
-          <speed>7170.0</speed>
+          <speed>7170</speed>
         </state>
       </fan>
       <subcomponents/>
@@ -146,7 +146,7 @@
       </state>
       <fan>
         <state>
-          <speed>7260.0</speed>
+          <speed>7260</speed>
         </state>
       </fan>
       <subcomponents/>
@@ -217,9 +217,6 @@
       <power-supply>
         <state>
           <enabled>true</enabled>
-          <output-current>0.000000</output-current>
-          <output-power/>
-          <output-voltage>0.000000</output-voltage>
         </state>
         <config>
           <enabled>true</enabled>
@@ -412,9 +409,6 @@
           <laser-bias-current>
             <instant>100.0</instant>
           </laser-bias-current>
-          <optical-channel-config>
-            <fec>sdfec-acacia-higain</fec>
-          </optical-channel-config>
           <output-power>
             <avg>-1.1</avg>
             <instant>0.0</instant>
@@ -424,9 +418,6 @@
         </state>
         <config>
           <frequency>0</frequency>
-          <optical-channel-config>
-            <fec>sdfec-acacia-higain</fec>
-          </optical-channel-config>
         </config>
       </optical-channel>
       <subcomponents/>

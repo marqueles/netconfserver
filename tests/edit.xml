@@ -1,0 +1,12 @@
+<config>
+    <components>
+        <component>
+            <name>optch 1/1/n1</name>
+            <optical-channel>
+                <config>
+                    <frequency>19600000</frequency>
+                </config>
+            </optical-channel>
+        </component>
+    </components>
+</config>
