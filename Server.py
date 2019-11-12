@@ -31,12 +31,12 @@ from pymongo import MongoClient
 from lxml import etree
 import xml.etree.ElementTree as ET
 from lxml import objectify
-import Validation
 import pyangbind.lib.serialise as serialise
 import pyangbind.lib.pybindJSON as pybindJSON
 from pyangbind.lib.serialise import pybindJSONDecoder
-import setup_files.bindings
 import json
+from os import listdir, getcwd
+from pydoc import locate
 
 nsmap_add("sys", "urn:ietf:params:xml:ns:yang:ietf-system")
 
@@ -63,6 +63,18 @@ def date_time_string(dt):
 class SystemServer(object):
     def __init__(self, port, host_key, auth, debug):
         self.server = server.NetconfSSHServer(auth, self, port, host_key, debug)
+        bindings_files_folder = getcwd() + "/bindings"
+        bindings_folder_list = listdir(bindings_files_folder)
+        for bind_file in bindings_folder_list:
+            if "binding_" in bind_file and '.py' in bind_file:
+                binding_file = bind_file
+                break
+
+        binding_file_fixed = binding_file.replace(".py", "")
+
+        logging.info("Used model: "+binding_file_fixed.split("_")[1])
+
+        self.binding = locate('bindings.' + binding_file_fixed)
 
     def close(self):
         self.server.close()
@@ -73,13 +85,16 @@ class SystemServer(object):
                     "capability").text = "urn:ietf:params:netconf:capability:xpath:1.0"
         util.subelm(capabilities, "capability").text = NSMAP["sys"]
 
+  #  def rpc_change_active_model(self, rpc):
+
+
     def rpc_get(self, session, rpc, filter_or_none):  # pylint: disable=W0613
+        dbclient = MongoClient()
         if rpc[0].find('{*}filter') is None:
             # All configuration files should be appended
-            dbclient = MongoClient()
-            db = dbclient.netconfserver
             data_elm = etree.Element('data', nsmap={None: 'urn:ietf:params:xml:ns:netconf:base:1.0'})
             i = 1
+            db = dbclient.netconf
             logging.info(db.list_collections())
             for collection_name in db.list_collection_names():
                 collection = getattr(db, collection_name)
@@ -90,14 +105,13 @@ class SystemServer(object):
                         del collection_data_1[element]
                 collection_data = collection_data_1
 
-                collection_binding = pybindJSONDecoder.load_ietf_json(collection_data, binding, collection_name)
+                collection_binding = pybindJSONDecoder.load_ietf_json(collection_data, self.binding, collection_name)
                 xml_data_string = serialise.pybindIETFXMLEncoder.serialise(collection_binding)
                 xml_data = etree.XML(xml_data_string)
                 data_elm.insert(i, xml_data)
                 i += 1
             xml_response = data_elm
 
-        # Only supportedd datastore so far is platform
         else:
             # Parsing the database name form the rpc tag namespace
             db_base = rpc[0][1][0].tag.split('}')[0].split('/')[-1]
@@ -106,8 +120,7 @@ class SystemServer(object):
             # logging.info(db_name)
 
             # Finding the datastore requested
-            dbclient = MongoClient()
-            db = dbclient.netconfserver
+            db = dbclient.netconf
             names = db.list_collection_names()
             # logging.info(names)
 
@@ -125,7 +138,7 @@ class SystemServer(object):
                         del datastore_data_1[element]
                 datastore_data = datastore_data_1
 
-                database_data_binding = pybindJSONDecoder.load_ietf_json(datastore_data, binding, db_name)
+                database_data_binding = pybindJSONDecoder.load_ietf_json(datastore_data, self.binding, db_name)
                 logging.info(database_data_binding)
 
                 # Parsing the data to xml
@@ -149,16 +162,13 @@ class SystemServer(object):
         return toreturn
 
     def rpc_get_config(self, session, rpc, source_elm, filter_or_none):  # pylint: disable=W0613
-
-        # logging.info(etree.tostring(rpc, pretty_print=True))
+        dbclient = MongoClient()
         # Empty filter
         if rpc[0].find('{*}filter') is None:
             # All configuration files should be appended
-            dbclient = MongoClient()
-            db = dbclient.netconfserver
+            db = dbclient.netconf
             data_elm = etree.Element('data', nsmap={None: 'urn:ietf:params:xml:ns:netconf:base:1.0'})
             i = 1
-            logging.info(db.list_collections())
             for collection_name in db.list_collection_names():
                 collection = getattr(db,collection_name)
                 collection_data = collection.find_one()
@@ -168,7 +178,7 @@ class SystemServer(object):
                         del collection_data_1[element]
                 collection_data = collection_data_1
 
-                collection_binding = pybindJSONDecoder.load_ietf_json(collection_data, binding, collection_name)
+                collection_binding = pybindJSONDecoder.load_ietf_json(collection_data, self.binding, collection_name)
                 xml_data_string = serialise.pybindIETFXMLEncoder.serialise(collection_binding)
                 xml_data = etree.XML(xml_data_string)
                 data_elm.insert(i,xml_data)
@@ -184,8 +194,7 @@ class SystemServer(object):
             #logging.info(db_name)
 
             # Finding the datastore requested
-            dbclient = MongoClient()
-            db = dbclient.netconfserver
+            db = dbclient.netconf
             names = db.list_collection_names()
             #logging.info(names)
 
@@ -203,7 +212,7 @@ class SystemServer(object):
                         del datastore_data_1[element]
                 datastore_data = datastore_data_1
 
-                database_data_binding = pybindJSONDecoder.load_ietf_json(datastore_data, binding, db_name)
+                database_data_binding = pybindJSONDecoder.load_ietf_json(datastore_data, self.binding, db_name)
                 logging.info(database_data_binding)
 
                 # Parsing the data to xml
@@ -230,7 +239,7 @@ class SystemServer(object):
     def rpc_edit_config(self, unused_session, rpc, *unused_params):
         """XXX API subject to change -- unfinished"""
 
-        print(rpc)
+        logging.info(etree.tostring(rpc, pretty_print=True))
 
         data_response = util.elm("ok")
         data_to_insert = rpc[0][1]

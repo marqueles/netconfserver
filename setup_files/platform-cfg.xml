@@ -112,6 +112,11 @@
         </temperature>
         <used-power>41</used-power>
       </state>
+      <fan>
+        <state>
+          <speed>7170</speed>
+        </state>
+      </fan>
       <subcomponents/>
     </component>
     <component>
@@ -139,6 +144,11 @@
         </temperature>
         <used-power>49</used-power>
       </state>
+      <fan>
+        <state>
+          <speed>7260</speed>
+        </state>
+      </fan>
       <subcomponents/>
     </component>
     <component>
@@ -204,6 +214,14 @@
         <removable>true</removable>
         <serial-no>LBADVA93154100968</serial-no>
       </state>
+      <power-supply>
+        <state>
+          <enabled>true</enabled>
+        </state>
+        <config>
+          <enabled>true</enabled>
+        </config>
+      </power-supply>
       <subcomponents/>
     </component>
     <component>
@@ -326,6 +344,11 @@
         </temperature>
         <used-power>112</used-power>
       </state>
+      <linecard xmlns="http://openconfig.net/yang/platform/linecard">
+        <state>
+          <slot-id>card</slot-id>
+        </state>
+      </linecard>
       <subcomponents>
         <subcomponent>
           <name>port 1/1/n1</name>
@@ -374,6 +397,29 @@
         <type>OPTICAL_CHANNEL</type>
         <description>Optical channel</description>
       </state>
+      <optical-channel xmlns="http://openconfig.net/yang/terminal-device">
+        <state>
+          <frequency>0</frequency>
+          <input-power>
+            <avg>-3.7</avg>
+            <instant>-3.9</instant>
+            <max>0.0</max>
+            <min>-60.0</min>
+          </input-power>
+          <laser-bias-current>
+            <instant>100.0</instant>
+          </laser-bias-current>
+          <output-power>
+            <avg>-1.1</avg>
+            <instant>0.0</instant>
+            <max>0.0</max>
+            <min>-50.3</min>
+          </output-power>
+        </state>
+        <config>
+          <frequency>0</frequency>
+        </config>
+      </optical-channel>
       <subcomponents/>
     </component>
     <component>
@@ -386,6 +432,29 @@
         <type>OPTICAL_CHANNEL</type>
         <description>Optical channel</description>
       </state>
+      <optical-channel xmlns="http://openconfig.net/yang/terminal-device">
+        <state>
+          <frequency>0</frequency>
+          <input-power>
+            <avg>0.0</avg>
+            <instant/>
+            <max>0.0</max>
+            <min>0.0</min>
+          </input-power>
+          <laser-bias-current>
+            <instant>100.0</instant>
+          </laser-bias-current>
+          <output-power>
+            <avg>-37.1</avg>
+            <instant>-37.2</instant>
+            <max>-36.5</max>
+            <min>-37.6</min>
+          </output-power>
+        </state>
+        <config>
+          <frequency>0</frequency>
+        </config>
+      </optical-channel>
       <subcomponents/>
     </component>
     <component>

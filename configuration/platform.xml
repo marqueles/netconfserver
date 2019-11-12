@@ -12,7 +12,7 @@
         <description>FSP3000C, 4HU 7-slots</description>
         <hardware-version>1.01</hardware-version>
         <id>adva-f8-shelf:shelf-sh4</id>
-        <mfg-date>20160316</mfg-date>
+        <mfg-date>2016-03-16</mfg-date>
         <mfg-name>UN344269584</mfg-name>
         <oper-status>ACTIVE</oper-status>
         <part-no>1078800051-01</part-no>
@@ -22,7 +22,7 @@
         <temperature>
           <instant>330</instant>
         </temperature>
-        <used-power>0.0</used-power>
+        <used-power>0</used-power>
       </state>
       <subcomponents>
         <subcomponent>
@@ -60,7 +60,7 @@
           <available>346554368</available>
           <utilized>178343936</utilized>
         </memory>
-        <mfg-date>20160609</mfg-date>
+        <mfg-date>2016-06-09</mfg-date>
         <mfg-name>UN344269584</mfg-name>
         <oper-status>ACTIVE</oper-status>
         <part-no>1063801054-01</part-no>
@@ -73,7 +73,7 @@
           <max>33.0</max>
           <min>31.0</min>
         </temperature>
-        <used-power>7.0</used-power>
+        <used-power>7</used-power>
       </state>
       <subcomponents>
         <subcomponent>
@@ -98,7 +98,7 @@
         <description>Fan Var Speed 4HU</description>
         <hardware-version>1.01</hardware-version>
         <id>f8-eq-fan:ftm-4-card</id>
-        <mfg-date>20160303</mfg-date>
+        <mfg-date>2016-03-03</mfg-date>
         <mfg-name>UN344269584</mfg-name>
         <oper-status>ACTIVE</oper-status>
         <part-no>1042800054-01</part-no>
@@ -110,7 +110,7 @@
           <max>31.5</max>
           <min>30.5</min>
         </temperature>
-        <used-power>41.0</used-power>
+        <used-power>41</used-power>
       </state>
       <fan>
         <state>
@@ -130,7 +130,7 @@
         <description>Fan Var Speed 4HU</description>
         <hardware-version>1.01</hardware-version>
         <id>f8-eq-fan:ftm-4-card</id>
-        <mfg-date>20160303</mfg-date>
+        <mfg-date>2016-03-03</mfg-date>
         <mfg-name>UN344269584</mfg-name>
         <oper-status>ACTIVE</oper-status>
         <part-no>1042800054-01</part-no>
@@ -142,7 +142,7 @@
           <max>32.5</max>
           <min>32.0</min>
         </temperature>
-        <used-power>49.0</used-power>
+        <used-power>49</used-power>
       </state>
       <fan>
         <state>
@@ -179,7 +179,7 @@
           <max>33.0</max>
           <min>32.2</min>
         </temperature>
-        <used-power>15.0</used-power>
+        <used-power>15</used-power>
       </state>
       <subcomponents>
         <subcomponent>
@@ -207,7 +207,7 @@
         <description>PSM AC Card, 4HU, 1200W</description>
         <hardware-version>1</hardware-version>
         <id>f8-card-psm:psm-ac4-card</id>
-        <mfg-date>20151102</mfg-date>
+        <mfg-date>2015-11-02</mfg-date>
         <mfg-name>UN344269584</mfg-name>
         <oper-status>DISABLED</oper-status>
         <part-no>1040800064-01</part-no>
@@ -332,7 +332,7 @@
           <available>777736192</available>
           <utilized>280657920</utilized>
         </memory>
-        <mfg-date>20180406</mfg-date>
+        <mfg-date>2018-04-06</mfg-date>
         <mfg-name>UN344269584</mfg-name>
         <oper-status>ACTIVE</oper-status>
         <part-no>1063802131-02</part-no>
@@ -345,7 +345,7 @@
           <max>50.1</max>
           <min>37.0</min>
         </temperature>
-        <used-power>112.0</used-power>
+        <used-power>112</used-power>
       </state>
       <linecard xmlns="http://openconfig.net/yang/platform/linecard">
         <state>

@@ -5,9 +5,7 @@ import pyangbind.lib.pybindJSON as pybindJSON
 import sys
 import json
 from os import listdir, getcwd
-from os.path import dirname
 from pydoc import locate
-import bindings
 
 if sys.argv[1] is None:
     print("The database reference is missing")
@@ -17,7 +15,7 @@ if sys.argv[2] is None:
     print("The startup config is missing")
     exit(1)
 
-bindings_files_folder = getcwd()
+bindings_files_folder = getcwd()+"/bindings"
 
 database_model = sys.argv[1]
 database_file = sys.argv[2]
@@ -29,18 +27,14 @@ for bind_file in bindings_folder_list:
         binding_file = bind_file
         break
 
-print(binding_file)
 binding_file_fixed = binding_file.replace(".py","")
-print(binding_file_fixed)
 
-bind = locate('bindings.'+binding_file_fixed)
-
-print(bind)
+binding = locate('bindings.'+binding_file_fixed)
 
 print("Creating database", database_name)
 
 dbclient = MongoClient()
-db = dbclient.netconfserver
+db = dbclient.netconf
 
 print(database_file)
 
@@ -51,7 +45,15 @@ with open(database_file, 'r') as database_reader:
 database_data = serialise.pybindIETFXMLDecoder.decode(data, binding, database_name)
 database_string = pybindJSON.dumps(database_data, mode="ietf")
 
-database_json= json.loads(database_string)
-print("Inserting file into database")
+startup_json = json.loads(database_string)
+startup_json["_id"] = "startup"
+candidate_json = json.loads(database_string)
+candidate_json["_id"] = "candidate"
+running_json = json.loads(database_string)
+running_json["_id"] = "running"
+
+print("Inserting files into database")
 collection = getattr(db, database_name)
-result = collection.insert_one(database_json)
+#result_startup = collection.insert_one(startup_json)
+#result_candidate = collection.insert_one(candidate_json)
+result_running = collection.insert_one(running_json)

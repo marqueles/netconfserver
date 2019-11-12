@@ -1,3 +1,0 @@
-openconfig-platform-transceiver.yang
-openconfig-platform-linecard.yang
-openconfig-terminal-device.yang
