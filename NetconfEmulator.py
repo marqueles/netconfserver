@@ -28,37 +28,75 @@ import time
 from netconf import error, server, util
 from netconf import nsmap_add, NSMAP
 from pymongo import MongoClient
+#from xml import etree
 from lxml import etree
-import xml.etree.ElementTree as ET
-from lxml import objectify
 import pyangbind.lib.serialise as serialise
 import pyangbind.lib.pybindJSON as pybindJSON
 from pyangbind.lib.serialise import pybindJSONDecoder
 import json
 from os import listdir, getcwd
 from pydoc import locate
-import xmltodict
+import itertools
 
 nsmap_add("sys", "urn:ietf:params:xml:ns:yang:ietf-system")
 
 
-def parse_password_arg(password):
-    if password:
-        if password.startswith("env:"):
-            unused, key = password.split(":", 1)
-            password = os.environ[key]
-        elif password.startswith("file:"):
-            unused, path = password.split(":", 1)
-            password = open(path).read().rstrip("\n")
-    return password
+def iterate_and_replace(data_to_insert_xml, current_config_xml):
+    found = False
+    iterator_config = current_config_xml.iter()
+    for item_config in iterator_config:
+        iterator_data = data_to_insert_xml.iter()
+        for item_data in iterator_data:
+
+            if (item_data.tag in item_config.tag or item_config.tag in item_data.tag) and item_data.text == item_config.text:
+                item_data_text = str(item_data.text).strip()
+                item_config_text = str(item_config.text).strip()
+                if len(item_data_text) != 0 and len(item_config_text) != 0:
+                    elem_to_change = item_config
+                    new_conf = item_data
+                    found = True
+
+        if found:
+            break
 
 
-def date_time_string(dt):
-    tz = dt.strftime("%z")
-    s = dt.strftime("%Y-%m-%dT%H:%M:%S.%f")
-    if tz:
-        s += " {}:{}".format(tz[:-2], tz[-2:])
-    return s
+    config_tree = etree.ElementTree(current_config_xml)
+    data_tree = etree.ElementTree(data_to_insert_xml)
+    logging.info("---")
+    config_path_list = config_tree.getelementpath(elem_to_change).split("/{")
+    config_path_list.pop()
+    logging.info("----------")
+    data_path_list = data_tree.getelementpath(new_conf).split("/{")
+    data_path_list.pop()
+    logging.info("---------------------")
+    config_path = ''
+    for it in config_path_list:
+        config_path += '/{' + it
+    config_path = config_path[2:len(config_path)]
+    data_path = ''
+    for it2 in data_path_list:
+        data_path += '/{' + it2
+    data_path = data_path[2:len(data_path)]
+
+    config_element_to_change = config_tree.find(config_path)
+    data_new_conf = data_tree.find(data_path)
+    logging.info(etree.tostring(config_element_to_change, pretty_print=True))
+    logging.info(etree.tostring(data_new_conf, pretty_print=True))
+
+
+
+
+def get_datastore(datastore_raw):
+    if "running" in datastore_raw:
+        datastore = 'running'
+    elif "candidate" in datastore_raw:
+        datastore = 'candidate'
+    elif "startup" in datastore_raw:
+        datastore = 'startup'
+    else:
+        logging.info("Unknown datastore: "+datastore_raw)
+
+    return datastore
 
 
 class NetconfEmulator(object):
@@ -78,6 +116,7 @@ class NetconfEmulator(object):
 
         logging.info("Used model: "+self.used_model)
 
+
     def close(self):
         self.server.close()
 
@@ -87,7 +126,8 @@ class NetconfEmulator(object):
                     "capability").text = "urn:ietf:params:netconf:capability:xpath:1.0"
         util.subelm(capabilities, "capability").text = NSMAP["sys"]
 
-  #  def rpc_change_active_model(self, rpc):
+    def rpc_change_model(self, rpc):
+        logging.info("Received change-model rpc: "+etree.tostring(rpc, pretty_print=True))
 
 
     def rpc_get(self, session, rpc, filter_or_none):  # pylint: disable=W0613
@@ -156,7 +196,6 @@ class NetconfEmulator(object):
 
         if "data" not in toreturn.tag:
             logging.info("data not header")
-            nsmap = {None: 'urn:ietf:params:xml:ns:netconf:base:1.0'}
             data_elm = etree.Element('data', nsmap={None: 'urn:ietf:params:xml:ns:netconf:base:1.0'})
             data_elm.insert(1, toreturn)
             logging.info(etree.tostring(data_elm, pretty_print=True))
@@ -246,33 +285,21 @@ class NetconfEmulator(object):
         db = dbclient.netconf
 
         data_response = util.elm("ok")
-        datastore_to_insert = etree.tostring(rpc[0][0][0])
-        data_to_insert = xmltodict.parse(etree.tostring(rpc[0][1]))
-
-        if 'running' in datastore_to_insert:
-            for collection_name in db.list_collection_names():
-                if self.used_model in collection_name:
-                    collection = getattr(db, collection_name)
-                    running_config = dict(collection.find_one({"_id": "running"}))
-                    logging.info(data_to_insert)
-                    for key in data_to_insert:
-                        print(data_to_insert[key])
+        datastore_to_insert = get_datastore(etree.tostring(rpc[0][0][0]))
+        data_to_insert_xml = etree.fromstring(etree.tostring(rpc[0][1]))
 
 
-        else:
-            logging.error("Unknown datastore: "+datastore_to_insert)
+        for collection_name in db.list_collection_names():
+            if self.used_model in collection_name:
+                 collection = getattr(db, collection_name)
+                 running_config = collection.find_one({"_id": datastore_to_insert})
+                 del running_config["_id"]
+                 logging.info("RUNNING CONFIG")
+                 running_config_b = pybindJSONDecoder.load_ietf_json(running_config, self.binding, collection_name)
+                 running_config_xml_string = serialise.pybindIETFXMLEncoder.serialise(running_config_b)
+                 running_config_xml = etree.fromstring(running_config_xml_string)
+                 iterate_and_replace(data_to_insert_xml, running_config_xml)
 
-        # Validation.validate_rpc(data_to_insert,"edit-config")
-
-        # data_to_insert = data_to_insert.find("{http://openconfig.net/yang/platform}data")
-        # data_to_insert_string = etree.tostring(data_to_insert, pretty_print=True, encoding='unicode')
-        # parser = etree.XMLParser(remove_blank_text=True)
-        # data_to_insert = etree.fromstring(data_to_insert_string, parser=parser)
-        # data_to_insert_string = etree.tostring(data_to_insert, pretty_print=True)
-
-        # logging.info(data_to_insert_string)
-
-        # open("configuration/platform.xml", "w").write(data_to_insert_string)
 
         return data_response
 
@@ -288,12 +315,11 @@ def main(*margs):
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     parser.add_argument('--port', type=int, default=8300, help='Netconf server port')
     parser.add_argument("--username", default="admin", help='Netconf username')
-    parser.add_argument("--password", default="admin", help='Use "env:" or "file:" prefix to specify source')
+    parser.add_argument("--password", default="admin", help='Netconf password')
     args = parser.parse_args(*margs)
 
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
 
-    args.password = parse_password_arg(args.password)
     host_key = "/home/cesar/.ssh/id_rsa"
 
     auth = server.SSHUserPassController(username=args.username, password=args.password)

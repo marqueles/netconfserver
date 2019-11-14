@@ -42,8 +42,11 @@ print("Parsing data from the xml provided")
 with open(database_file, 'r') as database_reader:
     data = database_reader.read().replace('\n', '')
 
+print(data)
 database_data = serialise.pybindIETFXMLDecoder.decode(data, binding, database_name)
+print(database_data)
 database_string = pybindJSON.dumps(database_data, mode="ietf")
+print(database_string)
 
 startup_json = json.loads(database_string)
 startup_json["_id"] = "startup"

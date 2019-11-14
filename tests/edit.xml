@@ -1,10 +1,10 @@
 <config>
-    <components>
+    <components xmlns="http://openconfig.net/yang/platform">
         <component>
             <name>optch 1/1/n1</name>
             <optical-channel>
                 <config>
-                    <frequency>19600000</frequency>
+                    <frequency>19600010</frequency>
                 </config>
             </optical-channel>
         </component>
