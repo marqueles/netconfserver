@@ -62,13 +62,10 @@ def iterate_and_replace(data_to_insert_xml, current_config_xml):
 
     config_tree = etree.ElementTree(current_config_xml)
     data_tree = etree.ElementTree(data_to_insert_xml)
-    logging.info("---")
     config_path_list = config_tree.getelementpath(elem_to_change).split("/{")
     config_path_list.pop()
-    logging.info("----------")
     data_path_list = data_tree.getelementpath(new_conf).split("/{")
     data_path_list.pop()
-    logging.info("---------------------")
     config_path = ''
     for it in config_path_list:
         config_path += '/{' + it
@@ -80,8 +77,14 @@ def iterate_and_replace(data_to_insert_xml, current_config_xml):
 
     config_element_to_change = config_tree.find(config_path)
     data_new_conf = data_tree.find(data_path)
-    logging.info(etree.tostring(config_element_to_change, pretty_print=True))
-    logging.info(etree.tostring(data_new_conf, pretty_print=True))
+
+    for conf_item in config_element_to_change.iter():
+        for data_item in data_new_conf.iter():
+            if (conf_item.tag in data_item.tag or data_item.tag in conf_item) and conf_item.text.strip() != data_item.text.strip():
+                conf_item.text = data_item.text
+
+
+    return current_config_xml
 
 
 
@@ -128,6 +131,9 @@ class NetconfEmulator(object):
 
     def rpc_change_model(self, rpc):
         logging.info("Received change-model rpc: "+etree.tostring(rpc, pretty_print=True))
+
+    def rpc_commit(self, rpc):
+        logging.info("Received commit rpc: " + etree.tostring(rpc, pretty_print=True))
 
 
     def rpc_get(self, session, rpc, filter_or_none):  # pylint: disable=W0613
@@ -294,12 +300,17 @@ class NetconfEmulator(object):
                  collection = getattr(db, collection_name)
                  running_config = collection.find_one({"_id": datastore_to_insert})
                  del running_config["_id"]
-                 logging.info("RUNNING CONFIG")
                  running_config_b = pybindJSONDecoder.load_ietf_json(running_config, self.binding, collection_name)
                  running_config_xml_string = serialise.pybindIETFXMLEncoder.serialise(running_config_b)
                  running_config_xml = etree.fromstring(running_config_xml_string)
-                 iterate_and_replace(data_to_insert_xml, running_config_xml)
-
+                 newconfig = iterate_and_replace(data_to_insert_xml, running_config_xml)
+                 collection.delete_one({"_id": datastore_to_insert})
+                 newconfig_string = etree.tostring(newconfig)
+                 database_data = serialise.pybindIETFXMLDecoder.decode(newconfig_string, self.binding, collection_name)
+                 database_string = pybindJSON.dumps(database_data, mode="ietf")
+                 database_json = json.loads(database_string)
+                 database_json["_id"] = datastore_to_insert
+                 collection.insert_one(database_json)
 
         return data_response
 

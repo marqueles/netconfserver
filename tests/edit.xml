@@ -2,7 +2,7 @@
     <components xmlns="http://openconfig.net/yang/platform">
         <component>
             <name>optch 1/1/n1</name>
-            <optical-channel>
+            <optical-channel xmlns="http://openconfig.net/yang/terminal-device">
                 <config>
                     <frequency>19600010</frequency>
                 </config>

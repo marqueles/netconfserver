@@ -57,6 +57,6 @@ running_json["_id"] = "running"
 
 print("Inserting files into database")
 collection = getattr(db, database_name)
-#result_startup = collection.insert_one(startup_json)
-#result_candidate = collection.insert_one(candidate_json)
+result_startup = collection.insert_one(startup_json)
+result_candidate = collection.insert_one(candidate_json)
 result_running = collection.insert_one(running_json)
