@@ -28,7 +28,6 @@ import time
 from netconf import error, server, util
 from netconf import nsmap_add, NSMAP
 from pymongo import MongoClient
-#from xml import etree
 from lxml import etree
 import pyangbind.lib.serialise as serialise
 import pyangbind.lib.pybindJSON as pybindJSON
@@ -36,52 +35,80 @@ from pyangbind.lib.serialise import pybindJSONDecoder
 import json
 from os import listdir, getcwd
 from pydoc import locate
-import itertools
 
 nsmap_add("sys", "urn:ietf:params:xml:ns:yang:ietf-system")
 
 
-def iterate_and_replace(data_to_insert_xml, current_config_xml):
-    found = False
+def process_changes(data_to_insert_xml, current_config_xml):
+    config_tree = etree.ElementTree(current_config_xml)
+    data_tree = etree.ElementTree(data_to_insert_xml)
+
     iterator_config = current_config_xml.iter()
     for item_config in iterator_config:
         iterator_data = data_to_insert_xml.iter()
+
         for item_data in iterator_data:
+            operation = item_data.get("operation")
 
-            if (item_data.tag in item_config.tag or item_config.tag in item_data.tag) and item_data.text == item_config.text:
-                item_data_text = str(item_data.text).strip()
-                item_config_text = str(item_config.text).strip()
-                if len(item_data_text) != 0 and len(item_config_text) != 0:
-                    elem_to_change = item_config
-                    new_conf = item_data
-                    found = True
+            if item_data.tag == item_config.tag and operation == "merge":
 
-        if found:
-            break
+                logging.info("IGUALES")
+                config_path_list = config_tree.getelementpath(item_config).split("/{")
+                config_path_list.pop()
+                data_path_list = data_tree.getelementpath(item_data).split("/{")
+                data_path_list.pop()
+                logging.info("----------------------------------")
+                config_path = ''
+                for it in config_path_list:
+                    config_path += '/{' + it
+                config_path = config_path[2:len(config_path)]
+                data_path = ''
+                for it2 in data_path_list:
+                    data_path += '/{' + it2
+                data_path = data_path[2:len(data_path)]
+                logging.info("-----------------------------------------------------")
 
+                config_parent_element = config_tree.find(config_path)
+                data_parent_element = data_tree.find(data_path)
 
-    config_tree = etree.ElementTree(current_config_xml)
-    data_tree = etree.ElementTree(data_to_insert_xml)
-    config_path_list = config_tree.getelementpath(elem_to_change).split("/{")
-    config_path_list.pop()
-    data_path_list = data_tree.getelementpath(new_conf).split("/{")
-    data_path_list.pop()
-    config_path = ''
-    for it in config_path_list:
-        config_path += '/{' + it
-    config_path = config_path[2:len(config_path)]
-    data_path = ''
-    for it2 in data_path_list:
-        data_path += '/{' + it2
-    data_path = data_path[2:len(data_path)]
+                logging.info("------------------------------------------------------------")
+                logging.info(etree.tostring(config_parent_element, pretty_print=True))
+                logging.info(etree.tostring(data_parent_element, pretty_print=True))
 
-    config_element_to_change = config_tree.find(config_path)
-    data_new_conf = data_tree.find(data_path)
+                logging.info("merge")
+                for conf_item in config_parent_element.iter():
+                    for data_item in data_parent_element.iter():
+                        if (conf_item.tag in data_item.tag or data_item.tag in conf_item) and (conf_item.text.strip() != data_item.text.strip()):
+                            logging.info("CAMBIANDO DATOS")
+                            logging.info(conf_item.tag)
+                            logging.info(conf_item.text)
+                            logging.info(conf_item.attrib)
+                            logging.info(data_item.tag)
+                            logging.info(data_item.text)
+                            logging.info(data_item.attrib)
 
-    for conf_item in config_element_to_change.iter():
-        for data_item in data_new_conf.iter():
-            if (conf_item.tag in data_item.tag or data_item.tag in conf_item) and conf_item.text.strip() != data_item.text.strip():
-                conf_item.text = data_item.text
+            elif item_data.tag == item_config.tag and operation == "create":
+                logging.info("create")
+                logging.info("IGUALES")
+                logging.info(item_config.tag)
+                logging.info(item_data.tag)
+                config_path = config_tree.getelementpath(item_config)
+                data_path = data_tree.getelementpath(item_data)
+
+                logging.info(config_path)
+                logging.info(data_path)
+
+                config_element = config_tree.find(config_path)
+                data_element = data_tree.find(data_path)
+
+                logging.info("------------------------------------------------------------")
+                logging.info(etree.tostring(config_element, pretty_print=True))
+                logging.info(etree.tostring(data_element, pretty_print=True))
+
+                config_element.append(data_element[0])
+
+                logging.info("INSERTED")
+
 
 
     return current_config_xml
@@ -89,7 +116,8 @@ def iterate_and_replace(data_to_insert_xml, current_config_xml):
 
 
 
-def get_datastore(datastore_raw):
+def get_datastore(rpc):
+    datastore_raw = etree.tostring(rpc[0][0][0])
     if "running" in datastore_raw:
         datastore = 'running'
     elif "candidate" in datastore_raw:
@@ -98,6 +126,7 @@ def get_datastore(datastore_raw):
         datastore = 'startup'
     else:
         logging.info("Unknown datastore: "+datastore_raw)
+        exit(1)
 
     return datastore
 
@@ -147,7 +176,7 @@ class NetconfEmulator(object):
             logging.info(db.list_collections())
             for collection_name in db.list_collection_names():
                 collection = getattr(db, collection_name)
-                collection_data = collection.find_one()
+                collection_data = collection.find_one({"_id": "running"})
                 collection_data_1 = dict(collection_data)
                 for element in collection_data:
                     if "id" in element:
@@ -178,8 +207,7 @@ class NetconfEmulator(object):
                 logging.info("Found the datastore requested")
 
                 # Retrieving the data from the datastore
-                datastore_name = db_name + ":" + rpc[0][1][0].tag.split('}')[1]
-                datastore_data = db[db_name].find_one()
+                datastore_data = db[db_name].find_one({"_id": "running"})
 
                 datastore_data_1 = dict(datastore_data)
                 for element in datastore_data:
@@ -212,6 +240,7 @@ class NetconfEmulator(object):
     def rpc_get_config(self, session, rpc, source_elm, filter_or_none):  # pylint: disable=W0613
         logging.info("Received get-config rpc: " + etree.tostring(rpc, pretty_print=True))
         dbclient = MongoClient()
+        selected_datastore = get_datastore(rpc)
         # Empty filter
         if rpc[0].find('{*}filter') is None:
             # All configuration files should be appended
@@ -220,7 +249,7 @@ class NetconfEmulator(object):
             i = 1
             for collection_name in db.list_collection_names():
                 collection = getattr(db,collection_name)
-                collection_data = collection.find_one()
+                collection_data = collection.find_one({"_id": selected_datastore})
                 collection_data_1 = dict(collection_data)
                 for element in collection_data:
                     if "id" in element:
@@ -252,8 +281,7 @@ class NetconfEmulator(object):
                 logging.info("Found the datastore requested")
 
                 # Retrieving the data from the datastore
-                datastore_name = db_name + ":" + rpc[0][1][0].tag.split('}')[1]
-                datastore_data = db[db_name].find_one()
+                datastore_data = db[db_name].find_one({"_id": selected_datastore})
 
                 datastore_data_1 = dict(datastore_data)
                 for element in datastore_data:
@@ -271,7 +299,6 @@ class NetconfEmulator(object):
             else:
                 raise AttributeError("The requested datastore is not supported")
 
-        # Validation.validate_rpc(response, "get-config")
         toreturn = util.filter_results(rpc, xml_response, filter_or_none, self.server.debug)
         util.trimstate(toreturn)
 
@@ -291,7 +318,7 @@ class NetconfEmulator(object):
         db = dbclient.netconf
 
         data_response = util.elm("ok")
-        datastore_to_insert = get_datastore(etree.tostring(rpc[0][0][0]))
+        datastore_to_insert = get_datastore(rpc)
         data_to_insert_xml = etree.fromstring(etree.tostring(rpc[0][1]))
 
 
@@ -303,7 +330,9 @@ class NetconfEmulator(object):
                  running_config_b = pybindJSONDecoder.load_ietf_json(running_config, self.binding, collection_name)
                  running_config_xml_string = serialise.pybindIETFXMLEncoder.serialise(running_config_b)
                  running_config_xml = etree.fromstring(running_config_xml_string)
-                 newconfig = iterate_and_replace(data_to_insert_xml, running_config_xml)
+
+                 newconfig = process_changes(data_to_insert_xml, running_config_xml)
+
                  collection.delete_one({"_id": datastore_to_insert})
                  newconfig_string = etree.tostring(newconfig)
                  database_data = serialise.pybindIETFXMLDecoder.decode(newconfig_string, self.binding, collection_name)

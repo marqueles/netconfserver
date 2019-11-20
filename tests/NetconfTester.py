@@ -20,7 +20,10 @@ def main(*margs):
     password = args.password
     rpc = args.rpc
     datastore = args.datastore
-    filter_or_config = open(args.filter_or_config_file, 'r+').read()
+    if args.filter_or_config_file is None:
+        filter_or_config = None
+    else:
+        filter_or_config = open(args.filter_or_config_file, 'r+').read()
 
     man = manager.connect(host=host, port=port, username=username, password=password, timeout=120, hostkey_verify=False, look_for_keys=False, allow_agent=False)
 
@@ -32,12 +35,17 @@ def main(*margs):
     elif rpc == 'get':
 
         get_response = man.get(filter_or_config)
-        print get_response
+        print et.tostring(get_response.data_ele, pretty_print=True)
 
     elif rpc == 'edit-config':
 
-        rpc = "<edit-config><target><" + datastore + "/></target>" + filter_or_config + "</edit-config>"
-        edit_config_response = man.dispatch(et.fromstring(rpc))
+        if filter_or_config is None:
+            print("Error. Cannot send a edit-config rpc without config tag")
+            exit(1)
+        else:
+            rpc = "<edit-config><target><" + datastore + "/></target>" + filter_or_config + "</edit-config>"
+            edit_config_response = man.dispatch(et.fromstring(rpc))
+
         print edit_config_response
 
     else:

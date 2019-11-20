@@ -1,0 +1,8 @@
+<config>
+    <components xmlns="http://openconfig.net/yang/platform">
+        <component>
+            <name>optch 1/1/n1</name>
+            <optical-channel xmlns="http://openconfig.net/yang/terminal-device" operation="delete"/>
+        </component>
+    </components>
+</config>
