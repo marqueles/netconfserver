@@ -35,6 +35,7 @@ from pyangbind.lib.serialise import pybindJSONDecoder
 import json
 from os import listdir, getcwd
 from pydoc import locate
+from internal import objects
 
 nsmap_add("sys", "urn:ietf:params:xml:ns:yang:ietf-system")
 
@@ -133,7 +134,7 @@ def get_datastore(rpc):
 
 class NetconfEmulator(object):
     def __init__(self, port, host_key, auth, debug):
-        self.server = server.NetconfSSHServer(auth, self, port, host_key, debug)
+        self.server = objects.NetconfEmulatorServer(auth, self, port, host_key, debug)
         bindings_files_folder = getcwd() + "/bindings"
         bindings_folder_list = listdir(bindings_files_folder)
         for bind_file in bindings_folder_list:
