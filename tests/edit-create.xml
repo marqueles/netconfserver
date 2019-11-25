@@ -1,9 +1,9 @@
 <config>
-    <components xmlns="http://openconfig.net/yang/platform" operation="create">
+    <components xmlns="http://openconfig.net/yang/platform">
         <component>
-            <name>compnew</name>
+            <name>compnewman</name>
             <config>
-                <name>compnew</name>
+                <name>compnewman</name>
             </config>
         </component>
     </components>

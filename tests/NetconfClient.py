@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from lxml import etree as et
 
 def main(*margs):
-    parser = ArgumentParser("Netconf Client Tester")
+    parser = ArgumentParser("Netconf Client")
     parser.add_argument('--host',default='localhost', help='Netconf host')
     parser.add_argument('--port', type=int, default=8300, help='Netconf server port')
     parser.add_argument("--username", default="admin", help='Netconf username')

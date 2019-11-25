@@ -18,11 +18,8 @@
 #
 from __future__ import absolute_import, division, unicode_literals, print_function, nested_scopes
 import argparse
-import datetime
 import logging
 import os
-import platform
-import socket
 import sys
 import time
 from netconf import error, server, util
@@ -36,81 +33,55 @@ import json
 from os import listdir, getcwd
 from pydoc import locate
 from internal import objects
+from xmldiff import main as xmldiffmain
 
 nsmap_add("sys", "urn:ietf:params:xml:ns:yang:ietf-system")
 
 
 def process_changes(data_to_insert_xml, current_config_xml):
+
     config_tree = etree.ElementTree(current_config_xml)
     data_tree = etree.ElementTree(data_to_insert_xml)
 
-    iterator_config = current_config_xml.iter()
-    for item_config in iterator_config:
-        iterator_data = data_to_insert_xml.iter()
+    identifier_tag = ""
+    identifier_value = ""
 
-        for item_data in iterator_data:
-            operation = item_data.get("operation")
+    for subitem_data in data_to_insert_xml.iter():
+        if subitem_data.text.strip() != "":
+            identifier_tag = subitem_data.tag
+            identifier_value = subitem_data.text
+            target_element_path = data_tree.getelementpath(subitem_data)
+            target_element_data = data_tree.find(target_element_path).getparent()
+            break
 
-            if item_data.tag == item_config.tag and operation == "merge":
+    logging.info("Identifier tag is " + identifier_tag)
+    logging.info("Identifier value is " + identifier_value)
+    logging.info("Target element data is " + etree.tostring(target_element_data, pretty_print=True))
 
-                logging.info("IGUALES")
-                config_path_list = config_tree.getelementpath(item_config).split("/{")
-                config_path_list.pop()
-                data_path_list = data_tree.getelementpath(item_data).split("/{")
-                data_path_list.pop()
-                logging.info("----------------------------------")
-                config_path = ''
-                for it in config_path_list:
-                    config_path += '/{' + it
-                config_path = config_path[2:len(config_path)]
-                data_path = ''
-                for it2 in data_path_list:
-                    data_path += '/{' + it2
-                data_path = data_path[2:len(data_path)]
-                logging.info("-----------------------------------------------------")
+    target_element_config = None
 
-                config_parent_element = config_tree.find(config_path)
-                data_parent_element = data_tree.find(data_path)
+    for subitem_config in current_config_xml.iter():
+        if subitem_config.tag == identifier_tag and subitem_config.text.strip() == identifier_value:
+            logging.info("ENCONTRADO ITEM en config")
+            element_path = config_tree.getelementpath(subitem_config)
+            target_element_config = config_tree.find(element_path).getparent()
+            break
 
-                logging.info("------------------------------------------------------------")
-                logging.info(etree.tostring(config_parent_element, pretty_print=True))
-                logging.info(etree.tostring(data_parent_element, pretty_print=True))
-
-                logging.info("merge")
-                for conf_item in config_parent_element.iter():
-                    for data_item in data_parent_element.iter():
-                        if (conf_item.tag in data_item.tag or data_item.tag in conf_item) and (conf_item.text.strip() != data_item.text.strip()):
-                            logging.info("CAMBIANDO DATOS")
-                            logging.info(conf_item.tag)
-                            logging.info(conf_item.text)
-                            logging.info(conf_item.attrib)
-                            logging.info(data_item.tag)
-                            logging.info(data_item.text)
-                            logging.info(data_item.attrib)
-
-            elif item_data.tag == item_config.tag and operation == "create":
-                logging.info("create")
-                logging.info("IGUALES")
-                logging.info(item_config.tag)
-                logging.info(item_data.tag)
-                config_path = config_tree.getelementpath(item_config)
-                data_path = data_tree.getelementpath(item_data)
-
-                logging.info(config_path)
-                logging.info(data_path)
-
-                config_element = config_tree.find(config_path)
-                data_element = data_tree.find(data_path)
-
-                logging.info("------------------------------------------------------------")
-                logging.info(etree.tostring(config_element, pretty_print=True))
-                logging.info(etree.tostring(data_element, pretty_print=True))
-
-                config_element.append(data_element[0])
-
-                logging.info("INSERTED")
+    if target_element_config is not None:
+        logging.info("Target element config is " + etree.tostring(target_element_config, pretty_print=True))
 
 
+    if target_element_config is None:
+        logging.info("NO EXISTE RECURSO, HAY QUE CREARLO")
+
+    else:
+        logging.info("SI EXISTE RECURSO, HAY QUE MODIFICARLO")
+        logging.info(xmldiffmain.diff_trees(etree.ElementTree(target_element_config), etree.ElementTree(target_element_data)))
+
+       # for conf_item in target_element_config.iter():
+        #    for data_item in target_element_data.iter():
+         #       if conf_item.tag == data_item.tag and conf_item.text.strip() != data_item.text.strip():
+          #          conf_item.text = data_item.text
 
     return current_config_xml
 
@@ -322,7 +293,6 @@ class NetconfEmulator(object):
         datastore_to_insert = get_datastore(rpc)
         data_to_insert_xml = etree.fromstring(etree.tostring(rpc[0][1]))
 
-
         for collection_name in db.list_collection_names():
             if self.used_model in collection_name:
                  collection = getattr(db, collection_name)
@@ -361,7 +331,7 @@ def main(*margs):
 
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
 
-    host_key = "/home/cesar/.ssh/id_rsa"
+    host_key = os.getcwd() + "/hostkey/id_rsa"
 
     auth = server.SSHUserPassController(username=args.username, password=args.password)
     s = NetconfEmulator(args.port, host_key, auth, args.debug)

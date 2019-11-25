@@ -2,9 +2,10 @@
     <components xmlns="http://openconfig.net/yang/platform">
         <component>
             <name>optch 1/1/n1</name>
-            <optical-channel xmlns="http://openconfig.net/yang/terminal-device" operation="merge">
+            <optical-channel xmlns="http://openconfig.net/yang/terminal-device">
                 <config>
-                    <frequency>1960810</frequency>
+                    <frequency>19590410</frequency>
+                    <target-output-power>1</target-output-power>
                 </config>
             </optical-channel>
         </component>
