@@ -33,7 +33,6 @@ import json
 from os import listdir, getcwd
 from pydoc import locate
 from internal import objects
-from xmldiff import main as xmldiffmain
 
 nsmap_add("sys", "urn:ietf:params:xml:ns:yang:ietf-system")
 
@@ -54,34 +53,55 @@ def process_changes(data_to_insert_xml, current_config_xml):
             target_element_data = data_tree.find(target_element_path).getparent()
             break
 
-    logging.info("Identifier tag is " + identifier_tag)
-    logging.info("Identifier value is " + identifier_value)
-    logging.info("Target element data is " + etree.tostring(target_element_data, pretty_print=True))
 
     target_element_config = None
 
     for subitem_config in current_config_xml.iter():
         if subitem_config.tag == identifier_tag and subitem_config.text.strip() == identifier_value:
-            logging.info("ENCONTRADO ITEM en config")
             element_path = config_tree.getelementpath(subitem_config)
             target_element_config = config_tree.find(element_path).getparent()
             break
 
     if target_element_config is not None:
-        logging.info("Target element config is " + etree.tostring(target_element_config, pretty_print=True))
+        target_element_config_tree = etree.ElementTree(target_element_config)
 
+    target_element_data_tree = etree.ElementTree(target_element_data)
 
     if target_element_config is None:
-        logging.info("NO EXISTE RECURSO, HAY QUE CREARLO")
+        element_data_path = data_tree.getelementpath(target_element_data)
+        element_data_path_split = element_data_path.split("/{")
+        element_data_path_split.pop()
+        parent_path = ""
+        for subpath in element_data_path_split:
+            parent_path = parent_path + "/{" + subpath
+
+        parent_path = parent_path[2:len(parent_path)]
+        parent_element = config_tree.find(parent_path)
+        parent_element.insert(len(parent_element.getchildren()), target_element_data)
 
     else:
-        logging.info("SI EXISTE RECURSO, HAY QUE MODIFICARLO")
-        logging.info(xmldiffmain.diff_trees(etree.ElementTree(target_element_config), etree.ElementTree(target_element_data)))
 
-       # for conf_item in target_element_config.iter():
-        #    for data_item in target_element_data.iter():
-         #       if conf_item.tag == data_item.tag and conf_item.text.strip() != data_item.text.strip():
-          #          conf_item.text = data_item.text
+        for data_item in target_element_data.iter():
+
+            if data_item.text.strip() != "":
+                path = target_element_data_tree.getelementpath(data_item)
+                config_subel = target_element_config_tree.find(path)
+
+                if config_subel is None:
+                    path_split = path.split("/{")
+                    path_split.pop()
+                    parent_path = ""
+                    for subpath in path_split:
+                        parent_path = parent_path + "/{" + subpath
+
+                    parent_path = parent_path[2:len(parent_path)]
+                    parent_element = target_element_config_tree.find(parent_path)
+                    parent_element.insert(len(parent_element.getchildren()), data_item)
+
+                else:
+                    if config_subel.text != data_item.text:
+                        config_subel.text = data_item.text
+
 
     return current_config_xml
 
@@ -309,6 +329,7 @@ class NetconfEmulator(object):
                  database_data = serialise.pybindIETFXMLDecoder.decode(newconfig_string, self.binding, collection_name)
                  database_string = pybindJSON.dumps(database_data, mode="ietf")
                  database_json = json.loads(database_string)
+
                  database_json["_id"] = datastore_to_insert
                  collection.insert_one(database_json)
 

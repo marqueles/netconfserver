@@ -4,7 +4,7 @@
             <name>optch 1/1/n1</name>
             <optical-channel xmlns="http://openconfig.net/yang/terminal-device">
                 <config>
-                    <frequency>19590410</frequency>
+                    <frequency>196290710</frequency>
                     <target-output-power>1</target-output-power>
                 </config>
             </optical-channel>
