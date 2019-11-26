@@ -150,6 +150,27 @@ class NetconfEmulator(object):
                     "capability").text = "urn:ietf:params:netconf:capability:xpath:1.0"
         util.subelm(capabilities, "capability").text = NSMAP["sys"]
 
+
+    def rpc_available_models(self, session, rpc, *unused):
+        logging.info("Received available-models rpc: " + etree.tostring(rpc, pretty_print=True))
+        response = etree.Element("available-models")
+
+        bindings_files_folder = getcwd() + "/bindings"
+        bindings_folder_list = listdir(bindings_files_folder)
+        i = 0
+        for bind_file in bindings_folder_list:
+            if "binding_" in bind_file and '.py' in bind_file:
+                binding_file = bind_file
+                binding_file_fixed = binding_file.replace(".py", "")
+                model = str(binding_file_fixed.split("_")[1]) + ".yang"
+                model_element = etree.Element("available-model")
+                model_element.text = model
+                response.insert(i, model_element)
+                i += 1
+
+
+        return response
+
     def rpc_change_model(self, rpc):
         logging.info("Received change-model rpc: "+etree.tostring(rpc, pretty_print=True))
 
@@ -217,7 +238,6 @@ class NetconfEmulator(object):
             else:
                 raise AttributeError("The requested datastore is not supported")
 
-        # Validation.validate_rpc(response, "get-config")
         toreturn = util.filter_results(rpc, xml_response, filter_or_none, self.server.debug)
 
         if "data" not in toreturn.tag:
@@ -344,7 +364,7 @@ class NetconfEmulator(object):
 
 def main(*margs):
     parser = argparse.ArgumentParser("Netconf Agent Emulator")
-    parser.add_argument("--debug", action="store_true", help="Enable debug logging")
+    parser.add_argument("--debug", default=False, help="Enable debug logging")
     parser.add_argument('--port', type=int, default=8300, help='Netconf server port')
     parser.add_argument("--username", default="admin", help='Netconf username')
     parser.add_argument("--password", default="admin", help='Netconf password')

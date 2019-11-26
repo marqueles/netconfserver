@@ -48,6 +48,13 @@ def main(*margs):
 
         print edit_config_response
 
+    elif rpc == 'available-models':
+
+        rpc = "<available-models/>"
+        available_models_response = man.dispatch(et.fromstring(rpc))
+        print available_models_response
+
+
     else:
         print("Unknown RPC")
 

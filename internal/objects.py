@@ -1,7 +1,7 @@
 from netconf import server
 import io
 import logging
-import sshutil
+import sshutil.server as sshutilserver
 import threading
 from lxml import etree
 import netconf.error as ncerror
@@ -11,7 +11,7 @@ from netconf import util
 
 logger = logging.getLogger(__name__)
 
-class NetconfEmulatorServer(sshutil.server.SSHServer):
+class NetconfEmulatorServer(sshutilserver.SSHServer):
 
     def __init__(self, server_ctl=None, server_methods=None, port=830, host_key=None, debug=False):
         self.server_methods = server_methods if server_methods is not None else server.NetconfMethods()
